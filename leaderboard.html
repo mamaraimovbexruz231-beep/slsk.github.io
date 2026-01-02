@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard | Official</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- 1. GLOBAL STYLES & BACKGROUND --- */
+        :root {
+            --bg-dark: #050507;
+            --deep-purple: #1a0b2e;
+            --accent-glow: #764ba2;
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --text-main: #ffffff;
+            --neon-blue: #2575fc;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Exo 2', sans-serif;
+            background-color: var(--bg-dark);
+            background-image: radial-gradient(circle at 50% -10%, #431d68 0%, #050507 70%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 50px 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            display: flex;
+            flex-direction: column;
+            gap: 60px;
+        }
+
+        /* --- 2. HEADER: TITLE & UPLOAD CONTROLS --- */
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            flex-wrap: wrap; /* Added for mobile wrapping */
+        }
+
+        /* TITLE GROUP FOR HOME + TITLE */
+        .title-group {
+            display: flex;
+            align-items: baseline;
+            gap: 20px;
+        }
+
+        .home-link {
+            text-decoration: none;
+            color: rgba(255, 255, 255, 0.4);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: 0.3s;
+            padding: 5px 10px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        .home-link:hover {
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px var(--neon-blue);
+            border-color: rgba(37, 117, 252, 0.3);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .main-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            background: linear-gradient(to right, #ffffff, #9d50bb, #6e48aa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 15px rgba(157, 80, 187, 0.6));
+        }
+
+        .upload-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .name-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+            padding: 12px 20px;
+            color: white;
+            font-family: 'Orbitron';
+            font-size: 0.8rem;
+            outline: none;
+            transition: 0.3s;
+            width: 180px;
+        }
+
+        .name-input:focus {
+            border-color: var(--neon-blue);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 15px rgba(37, 117, 252, 0.3);
+        }
+
+        .btn-upload {
+            background: linear-gradient(135deg, #764ba2 0%, #2575fc 100%);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: white;
+            padding: 15px 35px;
+            border-radius: 50px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(118, 75, 162, 0.5);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            white-space: nowrap;
+        }
+
+        .btn-upload:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px rgba(118, 75, 162, 0.8);
+            border-color: white;
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        /* --- 3. THE GLASSMORPHISM STYLE --- */
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-top: 1px solid rgba(255, 255, 255, 0.35);
+            border-left: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 24px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        .glass::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.04;
+            pointer-events: none;
+        }
+
+        /* --- 4. PODIUM (TOP 3) LAYOUT --- */
+        .podium-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 25px;
+            height: 350px;
+        }
+
+        .podium-card {
+            width: 280px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 30px;
+            transition: transform 0.4s ease;
+        }
+
+        .podium-card:hover {
+            transform: translateY(-15px);
+        }
+
+        .medal-emoji {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+            display: block;
+            filter: drop-shadow(0 0 15px rgba(255,255,255,0.3));
+        }
+
+        .podium-card .nickname {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            font-family: 'Orbitron', sans-serif;
+            margin-top: 10px;
+        }
+
+        .rank-1 {
+            height: 100%;
+            border-color: rgba(255, 215, 0, 0.5);
+            z-index: 2;
+            transform: scale(1.1);
+            box-shadow: 0 15px 50px rgba(255, 215, 0, 0.15);
+        }
+        .rank-1:hover { transform: scale(1.15) translateY(-15px); }
+
+        .rank-2 {
+            height: 80%;
+            border-color: rgba(192, 192, 192, 0.4);
+        }
+
+        .rank-3 {
+            height: 70%;
+            border-color: rgba(205, 127, 50, 0.4);
+        }
+
+        /* --- 5. GRID (RANKS 4-11) --- */
+        .ranks-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .list-item {
+            display: flex;
+            align-items: center;
+            padding: 22px 35px;
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .list-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(15px);
+            border-color: var(--accent-glow);
+            box-shadow: -10px 0 20px rgba(118, 75, 162, 0.2);
+        }
+
+        .rank-number {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            font-size: 1.3rem;
+            color: var(--accent-glow);
+            margin-right: 30px;
+            width: 50px;
+            text-shadow: 0 0 10px rgba(118, 75, 162, 0.5);
+        }
+
+        .list-item .nickname {
+            font-size: 1.3rem;
+            font-weight: 400;
+            color: #efefef;
+            letter-spacing: 0.5px;
+            word-break: break-all; /* Prevents overflow of long names */
+        }
+
+        /* --- 6. UPLOAD OVERLAY (PROGRESS CIRCLE) --- */
+        #upload-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.92);
+            backdrop-filter: blur(15px);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loader-wrapper {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loader-circle {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 5px solid rgba(255, 255, 255, 0.05);
+            border-top: 5px solid var(--neon-blue);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            filter: drop-shadow(0 0 20px var(--neon-blue));
+        }
+
+        #percent-text {
+            font-family: 'Orbitron';
+            font-size: 2.5rem;
+            color: white;
+            z-index: 10;
+            text-shadow: 0 0 15px rgba(255,255,255,0.6);
+        }
+
+        .loading-status-text {
+            margin-top: 40px;
+            font-family: 'Orbitron';
+            color: white;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            font-size: 1rem;
+            opacity: 0.9;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+        /* --- 7. RECENT REPLAYS SECTION --- */
+        .replays-container {
+            margin-top: 20px;
+            padding-bottom: 80px;
+        }
+
+        .replays-title {
+            font-family: 'Orbitron';
+            color: var(--accent-glow);
+            font-size: 1.4rem;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .replays-title::after {
+            content: "";
+            height: 1px;
+            flex-grow: 1;
+            background: linear-gradient(to right, var(--accent-glow), transparent);
+        }
+
+        #video-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .replay-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 30px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
+            text-decoration: none;
+            color: white;
+            transition: 0.4s;
+            gap: 10px;
+        }
+
+        .replay-item:hover {
+            background: rgba(118, 75, 162, 0.15);
+            border-color: var(--accent-glow);
+            transform: scale(1.01);
+        }
+
+        .uploader-badge {
+            font-family: 'Orbitron';
+            font-size: 0.75rem;
+            background: rgba(37, 117, 252, 0.2);
+            color: var(--neon-blue);
+            padding: 6px 14px;
+            border-radius: 50px;
+            border: 1px solid rgba(37, 117, 252, 0.3);
+            letter-spacing: 1px;
+            flex-shrink: 0;
+        }
+
+        /* --- 8. RESPONSIVE DESIGN (UPDATED) --- */
+        @media (max-width: 900px) {
+            body { padding: 30px 15px; }
+            .header-row { flex-direction: column; gap: 30px; text-align: center; }
+            .title-group { flex-direction: column; align-items: center; gap: 10px; }
+            .main-title { font-size: 2.2rem; }
+            .upload-controls { flex-direction: column; width: 100%; gap: 10px; }
+            .name-input { width: 100%; }
+            .btn-upload { width: 100%; justify-content: center; padding: 12px; }
+            .podium-container { flex-direction: column; height: auto; align-items: center; padding-top: 40px; gap: 40px; }
+            .podium-card { width: 100%; height: auto; min-height: 160px; }
+            .rank-1 { order: -1; transform: scale(1); }
+            .rank-1:hover { transform: translateY(-10px); }
+            .ranks-grid { grid-template-columns: 1fr; }
+            .list-item { padding: 15px 20px; }
+            .list-item:hover { transform: none; }
+            .replay-item { flex-direction: column; text-align: center; padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="upload-overlay">
+        <div class="loader-wrapper">
+            <div class="loader-circle"></div>
+            <div id="percent-text">0%</div>
+        </div>
+        <div class="loading-status-text">Uploading...</div>
+    </div>
+
+    <div class="container">
+        <header class="header-row">
+            <div class="title-group">
+                <a href="index.html" class="home-link">Home</a>
+                <h1 class="main-title">Leaderboard</h1>
+            </div>
+            <div class="upload-controls">
+                <input type="text" id="user-nickname" class="name-input" placeholder="NICKNAME...">
+                <button class="btn-upload" onclick="validateAndUpload()">
+                    <span>☁️</span> Upload Video
+                </button>
+                <input type="file" id="file-input" accept="video/*">
+            </div>
+        </header>
+
+        <section class="podium-container">
+            <div class="glass podium-card rank-2">
+                <span class="medal-emoji">🥈</span>
+                <span class="nickname">None</span>
+            </div>
+            <div class="glass podium-card rank-1">
+                <span class="medal-emoji">🥇</span>
+                <span class="nickname">None</span>
+            </div>
+            <div class="glass podium-card rank-3">
+                <span class="medal-emoji">🥉</span>
+                <span class="nickname">None</span>
+            </div>
+        </section>
+
+        <section class="ranks-grid">
+            <div class="glass list-item">
+                <span class="rank-number">#4</span>
+                <span class="nickname">None</span>
+            </div>
+            <div class="glass list-item">
+                <span class="rank-number">#5</span>
+                <span class="nickname">None</span>
+            </div>
+            <div class="glass list-item">
+                <span class="rank-number">#6</span>
+                <span class="nickname">None</span>
+            </div>
+            <div class="glass list-item">
+                <span class="rank-number">#7</span>
+                <span class="nickname">None</span>
+            </div>
+            <div class="glass list-item">
+                <span class="rank-number">#8</span>
+                <span class="nickname">None</span>
+            </div>
+            <div class="glass list-item">
+                <span class="rank-number">#9</span>
+                <span class="nickname">None</span>
+            </div>
+            <div class="glass list-item">
+                <span class="rank-number">#10</span>
+                <span class="nickname">None</span>
+            </div>
+            <div class="glass list-item">
+                <span class="rank-number">#11</span>
+                <span class="nickname">None</span>
+            </div>
+        </section>
+
+        <section class="replays-container">
+            <h2 class="replays-title">Recent Replays</h2>
+            <div id="video-list"></div>
+        </section>
+    </div>
+
+    <script>
+        const cloudName = "dkipzawif"; 
+        const uploadPreset = "slsk_upload"; 
+
+        const fileInput = document.getElementById('file-input');
+        const nameInput = document.getElementById('user-nickname');
+        const overlay = document.getElementById('upload-overlay');
+        const percentDisplay = document.getElementById('percent-text');
+        const videoList = document.getElementById('video-list');
+
+        let displayPercent = 0;
+
+        function validateAndUpload() {
+            if (!nameInput.value.trim()) {
+                alert("ACCESS DENIED: Please enter a nickname before uploading.");
+                nameInput.focus();
+                return;
+            }
+            fileInput.click();
+        }
+
+        function animateCounter(target) {
+            const step = () => {
+                if (displayPercent < target) {
+                    displayPercent++;
+                    percentDisplay.innerText = displayPercent + "%";
+                    requestAnimationFrame(step);
+                }
+            };
+            requestAnimationFrame(step);
+        }
+        
+        fileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            const uploaderName = nameInput.value.trim();
+            if (!file) return;
+
+            overlay.style.display = 'flex';
+            displayPercent = 0;
+            percentDisplay.innerText = "0%";
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', uploadPreset);
+            formData.append('tags', `uploader_${uploaderName}`);
+            formData.append('context', `uploader=${uploaderName}|filename=${file.name}`);
+
+            const xhr = new XMLHttpRequest();
+            
+            xhr.upload.onprogress = (event) => {
+                if (event.lengthComputable) {
+                    const actualPercent = Math.round((event.loaded / event.total) * 100);
+                    animateCounter(actualPercent);
+                }
+            };
+
+            xhr.onload = () => {
+                if (xhr.status === 200) {
+                    const response = JSON.parse(xhr.responseText);
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                        const card = document.createElement('a');
+                        card.href = response.secure_url;
+                        card.target = "_blank";
+                        card.className = "replay-item";
+                        card.innerHTML = `
+                            <span>🎬 ${file.name.substring(0, 20)}${file.name.length > 20 ? '...' : ''}</span>
+                            <span class="uploader-badge">BY: ${uploaderName.toUpperCase()}</span>
+                        `;
+                        videoList.prepend(card);
+                        nameInput.value = ""; 
+                    }, 600);
+                } else {
+                    overlay.style.display = 'none';
+                    alert("UPLOAD FAILED: Cloud link severed.");
+                }
+            };
+
+            xhr.onerror = () => {
+                overlay.style.display = 'none';
+                alert("CRITICAL ERROR: Connection lost.");
+            };
+
+            xhr.open('POST', `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`);
+            xhr.send(formData);
+        });
+    </script>
+</body>
+</html>
