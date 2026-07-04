@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard | SLSK</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: #08090e;
+            overflow: hidden;
+            font-family: system-ui, -apple-system, sans-serif;
+            color: #f0f0f0;
+            height: 100vh; width: 100vw;
+        }
+
+        #star-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+        /* CSS3DRenderer appended at z-index:1 by JS */
+
+        #ui { position: fixed; inset: 0; z-index: 10; pointer-events: none; }
+
+        /* ── Top nav bar ── */
+        .topbar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 clamp(20px, 4vw, 52px);
+            height: 60px;
+            background: rgba(8,9,14,.82); backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(240,240,240,.07);
+            pointer-events: auto; gap: 16px;
+        }
+        .topbar-left { display: flex; align-items: center; gap: 22px; }
+        .site-logo {
+            font-family: 'Anton', sans-serif; font-size: .85rem;
+            letter-spacing: .18em; text-transform: uppercase;
+            color: #f0f0f0; text-decoration: none;
+        }
+        .vsep { width: 1px; height: 14px; background: rgba(240,240,240,.1); }
+        .home-btn {
+            display: flex; align-items: center; justify-content: center;
+            width: 34px; height: 34px;
+            border: 1px solid rgba(240,240,240,.18);
+            border-radius: 8px;
+            color: rgba(240,240,240,.7);
+            text-decoration: none;
+            transition: .22s;
+            flex-shrink: 0;
+        }
+        .home-btn svg { width: 15px; height: 15px; }
+        .home-btn:hover {
+            border-color: rgba(163,230,53,.45);
+            color: #a3e635;
+            background: rgba(163,230,53,.07);
+            box-shadow: 0 0 14px rgba(163,230,53,.15);
+        }
+        .upload-controls { display: flex; align-items: center; gap: 8px; }
+        .name-input {
+            background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.09);
+            border-radius: 7px; padding: 9px 14px; color: #f0f0f0;
+            font-family: 'JetBrains Mono', monospace; font-size: .68rem;
+            outline: none; width: 144px; transition: .2s;
+        }
+        .name-input::placeholder { color: rgba(240,240,240,.18); }
+        .name-input:focus { border-color: rgba(163,230,53,.4); background: rgba(163,230,53,.03); }
+        .btn-upload {
+            display: flex; align-items: center; gap: 7px;
+            background: #a3e635; border: none; border-radius: 7px; color: #08090e;
+            padding: 9px 18px; font-size: .64rem; font-weight: 700;
+            letter-spacing: 2px; text-transform: uppercase; cursor: pointer;
+            transition: .2s; white-space: nowrap;
+        }
+        .btn-upload:hover { background: #bef264; box-shadow: 0 0 24px rgba(163,230,53,.3); }
+        .btn-upload svg { width: 12px; height: 12px; }
+        #file-input { display: none; }
+
+        /* ── LEADERBOARD header row — flat, below topbar ── */
+        .lb-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 clamp(20px, 4vw, 52px);
+            height: 76px;
+            background: rgba(8,9,14,.5);
+            border-bottom: 1px solid rgba(240,240,240,.06);
+            pointer-events: none;
+        }
+        .lb-title {
+            font-family: 'Anton', sans-serif;
+            font-size: clamp(1.9rem, 4vw, 3rem);
+            text-transform: uppercase; letter-spacing: .02em; line-height: 1;
+            color: #f0f0f0;
+            animation: hdrIn .7s .05s cubic-bezier(.25,.46,.45,.94) both;
+        }
+        .lb-season {
+            font-size: .5rem; font-weight: 700; letter-spacing: 3px;
+            text-transform: uppercase; color: rgba(240,240,240,.32);
+            border: 1px solid rgba(240,240,240,.1);
+            padding: 5px 13px; border-radius: 20px;
+            animation: hdrIn .7s .2s cubic-bezier(.25,.46,.45,.94) both;
+        }
+        @keyframes hdrIn {
+            from { opacity: 0; transform: translateY(-8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Rank list 04–11 — flat, above replays ── */
+        #rank-panel {
+            position: fixed; bottom: 58px; left: 50%;
+            transform: translateX(-50%);
+            z-index: 5; pointer-events: none;
+            width: min(860px, 92vw);
+            display: grid; grid-template-columns: 1fr 1fr;
+            border-top: 1px solid rgba(240,240,240,.08);
+        }
+        .rank-row {
+            display: flex; align-items: center; gap: 14px;
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(240,240,240,.05);
+            opacity: 0; /* animated in */
+        }
+        .rank-row:nth-child(odd)  { border-right: 1px solid rgba(240,240,240,.05); }
+
+        /* Staggered row animation */
+        @keyframes rowIn {
+            from { opacity: 0; transform: translateX(-14px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes lineGrow {
+            from { transform: scaleX(0); }
+            to   { transform: scaleX(1); }
+        }
+
+        .rank-row:nth-child(1) { animation: rowIn .45s .55s cubic-bezier(.25,.46,.45,.94) both; }
+        .rank-row:nth-child(2) { animation: rowIn .45s .62s cubic-bezier(.25,.46,.45,.94) both; }
+        .rank-row:nth-child(3) { animation: rowIn .45s .69s cubic-bezier(.25,.46,.45,.94) both; }
+        .rank-row:nth-child(4) { animation: rowIn .45s .76s cubic-bezier(.25,.46,.45,.94) both; }
+        .rank-row:nth-child(5) { animation: rowIn .45s .83s cubic-bezier(.25,.46,.45,.94) both; }
+        .rank-row:nth-child(6) { animation: rowIn .45s .90s cubic-bezier(.25,.46,.45,.94) both; }
+        .rank-row:nth-child(7) { animation: rowIn .45s .97s cubic-bezier(.25,.46,.45,.94) both; }
+        .rank-row:nth-child(8) { animation: rowIn .45s 1.04s cubic-bezier(.25,.46,.45,.94) both; }
+
+        .rk-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: .65rem; font-weight: 700; letter-spacing: 2px;
+            color: rgba(240,240,240,.22); min-width: 28px;
+        }
+        .rk-line {
+            flex: 1; height: 1px; background: rgba(255,255,255,.07);
+            transform: scaleX(0); transform-origin: left;
+        }
+        .rank-row:nth-child(1) .rk-line { animation: lineGrow .5s .70s ease both; }
+        .rank-row:nth-child(2) .rk-line { animation: lineGrow .5s .77s ease both; }
+        .rank-row:nth-child(3) .rk-line { animation: lineGrow .5s .84s ease both; }
+        .rank-row:nth-child(4) .rk-line { animation: lineGrow .5s .91s ease both; }
+        .rank-row:nth-child(5) .rk-line { animation: lineGrow .5s .98s ease both; }
+        .rank-row:nth-child(6) .rk-line { animation: lineGrow .5s 1.05s ease both; }
+        .rank-row:nth-child(7) .rk-line { animation: lineGrow .5s 1.12s ease both; }
+        .rank-row:nth-child(8) .rk-line { animation: lineGrow .5s 1.19s ease both; }
+
+        .rk-name { font-size: .84rem; color: rgba(240,240,240,.44); }
+
+        /* ── Replays strip ── */
+        #replays-panel {
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 9;
+            background: rgba(8,9,14,.88); backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(240,240,240,.07);
+            padding: 0 clamp(20px,4vw,52px);
+            height: 56px;
+            display: flex; align-items: center; gap: 20px;
+            pointer-events: auto;
+        }
+        .replays-label {
+            font-family: 'Anton', sans-serif; font-size: .65rem;
+            letter-spacing: .12em; text-transform: uppercase;
+            color: rgba(240,240,240,.2); white-space: nowrap; flex-shrink: 0;
+        }
+        #video-list { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; flex: 1; }
+        #video-list::-webkit-scrollbar { display: none; }
+        .replay-item {
+            display: flex; align-items: center; gap: 9px;
+            padding: 7px 13px; border: 1px solid rgba(240,240,240,.07);
+            border-radius: 7px; white-space: nowrap; text-decoration: none;
+            color: #f0f0f0; font-size: .72rem; flex-shrink: 0;
+            background: rgba(255,255,255,.02); transition: .2s;
+        }
+        .replay-item:hover { border-color: rgba(163,230,53,.2); }
+        .uploader-badge {
+            font-size: .46rem; font-weight: 700; letter-spacing: 2px;
+            text-transform: uppercase; color: #22d3ee;
+            background: rgba(34,211,238,.07); border: 1px solid rgba(34,211,238,.18);
+            padding: 3px 8px; border-radius: 4px;
+        }
+
+        /* Upload overlay */
+        #upload-overlay {
+            position: fixed; inset: 0; z-index: 9999;
+            background: rgba(8,9,14,.95); backdrop-filter: blur(14px);
+            display: none; flex-direction: column;
+            justify-content: center; align-items: center; gap: 28px;
+        }
+        .loader-wrapper { position: relative; width: 100px; height: 100px; display: flex; justify-content: center; align-items: center; }
+        .loader-circle {
+            position: absolute; width: 100%; height: 100%;
+            border: 2px solid rgba(255,255,255,.05); border-top: 2px solid #a3e635;
+            border-radius: 50%; animation: spin .8s linear infinite;
+            filter: drop-shadow(0 0 10px rgba(163,230,53,.4));
+        }
+        #percent-text { font-family: 'JetBrains Mono', monospace; font-size: 1.5rem; color: #a3e635; letter-spacing: 2px; }
+        .loading-status-text { font-size: .52rem; letter-spacing: 5px; text-transform: uppercase; color: rgba(240,240,240,.3); animation: pulse 1.5s infinite; }
+
+        @keyframes spin  { to { transform: rotate(360deg); } }
+        @keyframes pulse { 0%,100% { opacity: .3; } 50% { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+<canvas id="star-canvas"></canvas>
+
+<div id="upload-overlay">
+    <div class="loader-wrapper"><div class="loader-circle"></div><div id="percent-text">0%</div></div>
+    <div class="loading-status-text">Uploading...</div>
+</div>
+
+<div id="ui">
+    <!-- Top nav -->
+    <nav class="topbar">
+        <div class="topbar-left">
+            <a href="Main page/index.html" class="site-logo">SLSK</a>
+            <div class="vsep"></div>
+            <a href="Main page/index.html" class="home-btn" title="Home">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
+                    <path d="M9 21V12h6v9"/>
+                </svg>
+            </a>
+        </div>
+        <div class="upload-controls">
+            <input type="text" id="user-nickname" class="name-input" placeholder="your nickname">
+            <button class="btn-upload" onclick="validateAndUpload()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="16,16 12,12 8,16"/>
+                    <line x1="12" y1="12" x2="12" y2="21"/>
+                    <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+                </svg>
+                Upload
+            </button>
+            <input type="file" id="file-input" accept="video/*">
+        </div>
+    </nav>
+
+    <!-- Title header — separate row, never touches 3D cards -->
+    <div class="lb-header">
+        <span class="lb-title">Leaderboard</span>
+        <span class="lb-season">Season I</span>
+    </div>
+</div>
+
+<!-- Rank list 04–11 flat -->
+<div id="rank-panel">
+    <div class="rank-row"><span class="rk-num">04</span><span class="rk-line"></span><span class="rk-name">None</span></div>
+    <div class="rank-row"><span class="rk-num">05</span><span class="rk-line"></span><span class="rk-name">None</span></div>
+    <div class="rank-row"><span class="rk-num">06</span><span class="rk-line"></span><span class="rk-name">None</span></div>
+    <div class="rank-row"><span class="rk-num">07</span><span class="rk-line"></span><span class="rk-name">None</span></div>
+    <div class="rank-row"><span class="rk-num">08</span><span class="rk-line"></span><span class="rk-name">None</span></div>
+    <div class="rank-row"><span class="rk-num">09</span><span class="rk-line"></span><span class="rk-name">None</span></div>
+    <div class="rank-row"><span class="rk-num">10</span><span class="rk-line"></span><span class="rk-name">None</span></div>
+    <div class="rank-row"><span class="rk-num">11</span><span class="rk-line"></span><span class="rk-name">None</span></div>
+</div>
+
+<!-- Replays -->
+<div id="replays-panel">
+    <span class="replays-label">Recent Replays</span>
+    <div id="video-list"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.134.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/renderers/CSS3DRenderer.js"></script>
+<script>
+(function () {
+    var W = window.innerWidth, H = window.innerHeight;
+    var HEADER_H = 136; /* topbar(60) + lb-header(76) */
+    var BOTTOM_H = 228; /* rank-panel(172) + replays(56) */
+
+    /* Camera */
+    var cam = new THREE.PerspectiveCamera(52, W / H, 1, 10000);
+    cam.position.z = 900;
+
+    /* WebGL — stars only */
+    var starCanvas = document.getElementById('star-canvas');
+    var wgl = new THREE.WebGLRenderer({ canvas: starCanvas, alpha: true, antialias: false });
+    wgl.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+    wgl.setSize(W, H);
+    var wglScene = new THREE.Scene();
+
+    function addStars(count, color, size, opacity) {
+        var geo = new THREE.BufferGeometry();
+        var pos = new Float32Array(count * 3);
+        for (var i = 0; i < count; i++) {
+            pos[i*3]   = (Math.random()-.5)*5000;
+            pos[i*3+1] = (Math.random()-.5)*5000;
+            pos[i*3+2] = (Math.random()-.5)*5000;
+        }
+        geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+        wglScene.add(new THREE.Points(geo, new THREE.PointsMaterial({ color:color, size:size, transparent:true, opacity:opacity })));
+    }
+    addStars(2400, 0xa3e635, 1.8, 0.24);
+    addStars(900,  0x22d3ee, 1.3, 0.13);
+    addStars(500,  0xffffff, 1.0, 0.08);
+
+    /* CSS3D — cards only */
+    var css = new THREE.CSS3DRenderer();
+    css.setSize(W, H);
+    Object.assign(css.domElement.style, { position:'fixed', top:'0', left:'0', zIndex:'1' });
+    document.body.appendChild(css.domElement);
+    var cssScene = new THREE.Scene();
+
+    function add3d(el, x, y, z, ry) {
+        var o = new THREE.CSS3DObject(el);
+        o.position.set(x, y, z);
+        if (ry) o.rotation.y = ry;
+        cssScene.add(o);
+        return o;
+    }
+
+    /* Cards — centre them in the space between lb-header and rank-panel */
+    /* Cards area: HEADER_H → (H - BOTTOM_H) in screen px */
+    /* Centre of cards area from screen top: HEADER_H + (H - BOTTOM_H - HEADER_H)/2 */
+    var halfCSS = 900 * Math.tan(26 * Math.PI / 180); /* ≈440 CSS3D units = H/2 screen px */
+    var scale   = (H / 2) / halfCSS;
+
+    var cardsCentreScreen = HEADER_H + (H - BOTTOM_H - HEADER_H) / 2;
+    var cardY = (H / 2 - cardsCentreScreen) / scale;
+
+    function makeCard(num, label, name, hex, rgb) {
+        var cw = Math.round(Math.min(Math.max(W * 0.2, 200), 290));
+        var ch = Math.round(Math.min(Math.max((H - HEADER_H - BOTTOM_H) * 0.72, 180), 240));
+        var el = document.createElement('div');
+        el.style.cssText = [
+            'width:'+cw+'px', 'height:'+ch+'px',
+            'background:rgba('+rgb+',0.055)',
+            'border:1px solid rgba('+rgb+',0.24)',
+            'border-radius:16px', 'padding:22px 20px',
+            'position:relative', 'overflow:hidden',
+            'cursor:default', 'transition:filter .35s,border-color .35s'
+        ].join(';');
+
+        /* shimmer top edge */
+        var sh = document.createElement('div');
+        sh.style.cssText = 'position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba('+rgb+',0.55),transparent);pointer-events:none';
+        el.appendChild(sh);
+
+        /* scanlines */
+        var sc = document.createElement('div');
+        sc.style.cssText = 'position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(255,255,255,0.013) 3px,rgba(255,255,255,0.013) 4px);pointer-events:none;border-radius:16px';
+        el.appendChild(sc);
+
+        /* number */
+        var nEl = document.createElement('div');
+        nEl.style.cssText = 'font-family:"Anton",sans-serif;font-size:'+Math.round(cw*0.23)+'px;color:'+hex+';line-height:1;filter:drop-shadow(0 0 22px rgba('+rgb+',0.55));position:relative;z-index:1;margin-bottom:12px';
+        nEl.textContent = num;
+        el.appendChild(nEl);
+
+        /* label */
+        var lEl = document.createElement('div');
+        lEl.style.cssText = 'font-family:system-ui,sans-serif;font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba('+rgb+',0.55);position:relative;z-index:1;margin-bottom:5px';
+        lEl.textContent = label;
+        el.appendChild(lEl);
+
+        /* name */
+        var nmEl = document.createElement('div');
+        nmEl.style.cssText = 'font-family:"Anton",sans-serif;font-size:'+Math.round(cw*0.1)+'px;color:#f0f0f0;position:relative;z-index:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+        nmEl.textContent = name;
+        el.appendChild(nmEl);
+
+        el.addEventListener('mouseenter', function() {
+            el.style.filter = 'drop-shadow(0 0 36px rgba('+rgb+',0.36))';
+            el.style.borderColor = 'rgba('+rgb+',0.46)';
+        });
+        el.addEventListener('mouseleave', function() {
+            el.style.filter = '';
+            el.style.borderColor = 'rgba('+rgb+',0.24)';
+        });
+
+        return el;
+    }
+
+    var gap = Math.min(W * 0.34, 370);
+    add3d(makeCard('02','Runner Up',   'None','#22d3ee','34,211,238'),  -gap, cardY, -130,  0.30);
+    add3d(makeCard('01','Champion',    'None','#a3e635','163,230,53'),     0, cardY,  250,  0);
+    add3d(makeCard('03','Third Place', 'None','#f59e0b','245,158,11'),   gap, cardY, -130, -0.30);
+
+    /* Mouse parallax */
+    var tx=0, ty=0, cx=0, cy=0;
+    document.addEventListener('mousemove', function(e) {
+        tx = (e.clientX/innerWidth  - 0.5) *  120;
+        ty = (e.clientY/innerHeight - 0.5) * -50;
+    });
+
+    /* Render loop */
+    function tick() {
+        requestAnimationFrame(tick);
+        cx += (tx-cx)*0.05; cy += (ty-cy)*0.05;
+        cam.position.x = cx; cam.position.y = cy;
+        cam.lookAt(0, 0, 0);
+        wgl.render(wglScene, cam);
+        css.render(cssScene, cam);
+    }
+    tick();
+
+    window.addEventListener('resize', function() {
+        W = innerWidth; H = innerHeight;
+        cam.aspect = W/H; cam.updateProjectionMatrix();
+        wgl.setSize(W,H); css.setSize(W,H);
+    });
+})();
+
+/* Upload */
+var cloudName='dkipzawif', uploadPreset='slsk_upload';
+var fileInput=document.getElementById('file-input');
+var nameInput=document.getElementById('user-nickname');
+var overlay=document.getElementById('upload-overlay');
+var pctEl=document.getElementById('percent-text');
+var videoList=document.getElementById('video-list');
+var dp=0;
+
+function validateAndUpload(){
+    if(!nameInput.value.trim()){alert('Please enter a nickname.');nameInput.focus();return;}
+    fileInput.click();
+}
+function animateCounter(t){(function s(){if(dp<t){dp++;pctEl.innerText=dp+'%';requestAnimationFrame(s);}})();}
+
+fileInput.addEventListener('change',function(){
+    var file=this.files[0], uname=nameInput.value.trim();
+    if(!file)return;
+    overlay.style.display='flex'; dp=0; pctEl.innerText='0%';
+    var fd=new FormData();
+    fd.append('file',file); fd.append('upload_preset',uploadPreset);
+    fd.append('tags','uploader_'+uname);
+    fd.append('context','uploader='+uname+'|filename='+file.name);
+    var xhr=new XMLHttpRequest();
+    xhr.upload.onprogress=function(e){if(e.lengthComputable)animateCounter(Math.round(e.loaded/e.total*100));};
+    xhr.onload=function(){
+        if(xhr.status===200){
+            var res=JSON.parse(xhr.responseText);
+            setTimeout(function(){
+                overlay.style.display='none';
+                var item=document.createElement('a');
+                item.href=res.secure_url; item.target='_blank'; item.className='replay-item';
+                item.innerHTML='<span>'+file.name.substring(0,26)+(file.name.length>26?'…':'')+'</span>'
+                    +'<span class="uploader-badge">'+uname.toUpperCase()+'</span>';
+                videoList.prepend(item); nameInput.value='';
+            },600);
+        }else{overlay.style.display='none';alert('Upload failed.');}
+    };
+    xhr.onerror=function(){overlay.style.display='none';alert('Connection error.');};
+    xhr.open('POST','https://api.cloudinary.com/v1_1/'+cloudName+'/video/upload');
+    xhr.send(fd);
+});
+</script>
+</body>
+</html>
