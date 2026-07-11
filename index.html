@@ -1128,8 +1128,23 @@
       .phone-device { width: 58vw; max-width: 224px; }
       .phone-glow { width: 195px; height: 284px; opacity: .5; }
 
+      /* Chibi-hang — small accent, bottom-left, appears in phase 2 */
+      .chibi-hang {
+        position: absolute !important;
+        bottom: 10px; left: 3%;
+        opacity: 0;
+        animation: none !important;
+        -webkit-mask-image: none !important;
+        mask-image: none !important;
+      }
+      .chibi-hang img {
+        width: clamp(80px, 22vw, 100px);
+        -webkit-mask-image: none !important;
+        mask-image: none !important;
+      }
+
       /* Hide desktop-only */
-      #chibi-teacher, .chibi-hang, .chibi-end, .showcase-content { display: none; }
+      #chibi-teacher, .chibi-end, .showcase-content { display: none; }
 
       /* Compare section */
       .compare-backdrop-num { display: none; }
@@ -1821,6 +1836,7 @@
           gsap.set('#chibi-start',        { opacity: 1 });  // phase 1 visible
           gsap.set('.phone-left',          { opacity: 1 });  // phase 1 visible
           gsap.set('.phone-device-wrap',   { opacity: 0, filter: 'blur(10px) brightness(.4)' }); // phase 2 hidden
+          gsap.set('.chibi-hang',          { opacity: 0 });  // phase 2 accent, hidden initially
 
           var tl = gsap.timeline({
             scrollTrigger: {
@@ -1839,8 +1855,11 @@
           tl.to('.phone-device-wrap', { opacity: 1, duration: 0.18 }, 0.32);
           tl.to('.phone-device-wrap', { filter: 'blur(0px) brightness(1)', duration: 0.2 }, 0.42);
 
+          // ─ Phase 2 accent: chibi-hang slides in at bottom-left (55%–80%) ─
+          tl.to('.chibi-hang', { opacity: 1, duration: 0.15 }, 0.55);
+
           // ─ Exit (88%–100%) ─
-          tl.to('.phone-device-wrap', { opacity: 0, duration: 0.1 }, 0.88);
+          tl.to(['.phone-device-wrap', '.chibi-hang'], { opacity: 0, duration: 0.1 }, 0.88);
 
           // Auto-cycle feed
           var feed = document.getElementById('phone-feed');
