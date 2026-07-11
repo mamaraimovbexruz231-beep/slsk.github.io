@@ -1117,16 +1117,19 @@
       /* Hide desktop-only chibis and content */
       #chibi-teacher, .chibi-end, .showcase-content { display: none; }
 
-      /* Chibi-hang — show below the phone mockup, scroll-revealed */
+      /* Chibi-hang — show below the phone mockup */
       .chibi-hang {
         position: static !important;
+        transform: none !important;
+        opacity: 1 !important;
         animation: none !important;
         -webkit-mask-image: none !important;
         mask-image: none !important;
-        margin-top: -8px;
+        margin-top: 4px;
       }
       .chibi-hang img {
         width: clamp(160px, 50vw, 240px);
+        opacity: 1 !important;
         -webkit-mask-image: none !important;
         mask-image: none !important;
       }
@@ -1815,25 +1818,14 @@
           tl.from('.thought-bubble', { scale: 0, opacity: 0, duration: 0.05, ease: 'back.out(2)' }, 0.77);
         },
 
-        // Mobile: static layout, auto-cycling feed, scroll-revealed chibis
+        // Mobile: static layout, auto-cycling feed
         '(max-width: 768px)': function() {
-          // Clear any stale GSAP inline styles from desktop path
+          // Clear ALL stale GSAP inline styles so CSS takes control
           gsap.set('.phone-left', { clearProps: 'all' });
           gsap.set('.phone-device', { clearProps: 'all' });
           gsap.set('#chibi-start', { clearProps: 'all' });
-
-          // chibi-hang: start invisible, fade in when scrolled to
-          var chibiHang = document.querySelector('.chibi-hang');
-          if (chibiHang) {
-            gsap.set(chibiHang, { opacity: 0, y: 28 });
-            var hangObs = new IntersectionObserver(function(entries) {
-              if (entries[0].isIntersecting) {
-                gsap.to(chibiHang, { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out' });
-                hangObs.disconnect();
-              }
-            }, { threshold: 0.15 });
-            hangObs.observe(chibiHang);
-          }
+          gsap.set('.chibi-hang', { clearProps: 'all' });
+          gsap.set('.chibi-hang img', { clearProps: 'all' });
 
           // Auto-cycle the feed every 3 seconds
           var feed = document.getElementById('phone-feed');
