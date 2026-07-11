@@ -1087,52 +1087,60 @@
       /* Hero */
       .hero-subtitle { font-size: .78rem; letter-spacing: 1px; }
 
-      /* Phone showcase — full mobile redesign */
-      .phone-sect { height: auto; min-height: auto; padding: 80px 0 60px; }
+      /* Phone showcase — mobile sticky scroll animation */
+      .phone-sect { height: 220vh; min-height: auto; padding: 0; }
       .phone-pin {
-        height: auto;
-        position: relative;
-        overflow: visible;
+        height: 100vh;
+        position: sticky; top: 0;
+        overflow: hidden;
         display: flex; flex-direction: column;
-        align-items: center;
-        padding: 0 20px;
-        gap: 28px;
+        align-items: center; justify-content: center;
+        padding: 72px 20px 20px;
+        gap: 0;
       }
       .ambient-vid { display: none; }
-      .phone-left { position: static; transform: none; text-align: center; max-width: none; opacity: 1 !important; }
-      .phone-device-wrap { position: static; transform: none; }
-      .phone-device { width: 68vw; max-width: 260px; filter: none !important; }
-      .phone-glow { width: 220px; height: 320px; opacity: .5; }
 
-      /* Chibi start — show as static decoration below phone */
-      .chibi-start {
-        position: static !important;
-        transform: none !important;
-        opacity: 1 !important;
-        margin-top: -16px;
+      /* Phone title */
+      .phone-left {
+        position: static; transform: none;
+        text-align: center; max-width: none;
+        margin-bottom: 20px;
       }
-      .chibi-start img { width: clamp(140px, 42vw, 200px); }
-      .chibi-bubble { margin-top: -50px; font-size: .75rem; }
+      .edits-hero { font-size: clamp(3rem, 14vw, 5rem); }
 
-      /* Hide desktop-only chibis and content */
-      #chibi-teacher, .chibi-end, .showcase-content { display: none; }
+      /* Phone device */
+      .phone-device-wrap { position: static; transform: none; }
+      .phone-device { width: 62vw; max-width: 240px; }
+      .phone-glow { width: 200px; height: 290px; opacity: .5; }
 
-      /* Chibi-hang — show below the phone mockup */
-      .chibi-hang {
-        position: static !important;
-        transform: none !important;
+      /* Chibi start — overlaid at bottom center of sticky pin */
+      .chibi-start {
+        position: absolute !important;
+        bottom: 32px; left: 50%;
+        transform: translateX(-50%) !important;
         opacity: 1 !important;
+        margin: 0;
+      }
+      .chibi-start img { width: clamp(130px, 38vw, 180px); }
+      .chibi-bubble { font-size: .72rem; }
+
+      /* Chibi hang — overlaid bottom-right of sticky pin, hidden initially */
+      .chibi-hang {
+        position: absolute !important;
+        bottom: 16px; right: -4%;
+        opacity: 0;
         animation: none !important;
         -webkit-mask-image: none !important;
         mask-image: none !important;
-        margin-top: 4px;
       }
       .chibi-hang img {
-        width: clamp(160px, 50vw, 240px);
-        opacity: 1 !important;
+        width: clamp(130px, 38vw, 180px);
         -webkit-mask-image: none !important;
         mask-image: none !important;
       }
+
+      /* Hide desktop-only elements */
+      #chibi-teacher, .chibi-end, .showcase-content { display: none; }
 
       /* Compare section */
       .compare-backdrop-num { display: none; }
@@ -1818,29 +1826,46 @@
           tl.from('.thought-bubble', { scale: 0, opacity: 0, duration: 0.05, ease: 'back.out(2)' }, 0.77);
         },
 
-        // Mobile: static layout, auto-cycling feed
+        // Mobile: sticky scroll with 3-phase chibi animation
         '(max-width: 768px)': function() {
-          // Clear ALL stale GSAP inline styles so CSS takes control
-          gsap.set('.phone-left', { clearProps: 'all' });
-          gsap.set('.phone-device', { clearProps: 'all' });
-          gsap.set('#chibi-start', { clearProps: 'all' });
-          gsap.set('.chibi-hang', { clearProps: 'all' });
-          gsap.set('.chibi-hang img', { clearProps: 'all' });
+          // Clear stale desktop GSAP states
+          gsap.set('.phone-left, .phone-device, #chibi-start, .chibi-hang', { clearProps: 'all' });
 
-          // Auto-cycle the feed every 3 seconds
+          // Set up initial hidden states for scroll animation
+          gsap.set('.phone-left', { opacity: 0, y: 16 });
+          gsap.set('.phone-device-wrap', { opacity: 0, y: 24, filter: 'blur(8px) brightness(.5)' });
+
+          var tl = gsap.timeline({
+            scrollTrigger: {
+              trigger: '.phone-sect',
+              start: 'top top',
+              end: 'bottom bottom',
+              scrub: 0.8
+            }
+          });
+
+          // Phase 1 (0-25%): title fades in, phone blurred, chibi-start visible
+          tl.to('.phone-left', { opacity: 1, y: 0, duration: 0.2 }, 0.02);
+
+          // Phase 2 (25-55%): chibi-start fades out, phone sharpens
+          tl.to('#chibi-start', { opacity: 0, y: -20, duration: 0.18 }, 0.22);
+          tl.to('.phone-device-wrap', { opacity: 1, y: 0, filter: 'blur(0px) brightness(1)', duration: 0.22 }, 0.28);
+
+          // Phase 3 (55-85%): chibi-hang slides in
+          tl.to('.chibi-hang', { opacity: 1, duration: 0.2 }, 0.58);
+
+          // Phase 4 (85-100%): slight fade out before next section
+          tl.to(['.phone-left', '.phone-device-wrap', '.chibi-hang'], { opacity: 0, duration: 0.12 }, 0.87);
+
+          // Auto-cycle the feed every 3 s
           var feed = document.getElementById('phone-feed');
           if (!feed) return;
           var slides = feed.querySelectorAll('.phone-slide');
           if (slides.length < 2) return;
-
           var current = 0;
           setInterval(function() {
             current = (current + 1) % slides.length;
-            gsap.to(feed, {
-              yPercent: -(current / slides.length * 100),
-              duration: 0.6,
-              ease: 'power2.inOut'
-            });
+            gsap.to(feed, { yPercent: -(current / slides.length * 100), duration: 0.6, ease: 'power2.inOut' });
           }, 3000);
         }
       });
