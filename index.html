@@ -1810,23 +1810,51 @@
           tl.from('.thought-bubble', { scale: 0, opacity: 0, duration: 0.05, ease: 'back.out(2)' }, 0.77);
         }
       } else {
-        // ── Mobile ───────────────────────────────────────────────────────────
-        gsap.set('#chibi-start',       { opacity: 1 });
-        gsap.set('.phone-left',        { opacity: 1 });
-        gsap.set('.phone-device-wrap', { opacity: 0, filter: 'blur(10px) brightness(.4)' });
-        gsap.set('.chibi-hang',        { opacity: 0 });
+        // ── Mobile: plain scroll listener, no GSAP ScrollTrigger ─────────────
+        var mSect    = document.querySelector('.phone-sect');
+        var mChibi   = document.getElementById('chibi-start');
+        var mLeft    = document.querySelector('.phone-left');
+        var mWrap    = document.querySelector('.phone-device-wrap');
+        var mHang    = document.querySelector('.chibi-hang');
+        if (!mSect || !mChibi || !mWrap) return;
 
-        var tl = gsap.timeline({
-          scrollTrigger: { trigger: '.phone-sect', start: 'top top', end: 'bottom bottom', scrub: 1 }
-        });
+        // Initial visible state — override anything CSS/other-JS set
+        mChibi.style.cssText += ';opacity:1;transition:opacity .4s';
+        mLeft.style.cssText  += ';opacity:1;transition:opacity .4s';
+        mWrap.style.cssText  += ';opacity:0;filter:blur(10px) brightness(.4);transition:opacity .45s,filter .45s';
+        if (mHang) mHang.style.cssText += ';opacity:0;transition:opacity .4s';
 
-        tl.to('#chibi-start',       { opacity: 0, duration: 0.2  }, 0.25);
-        tl.to('.phone-left',        { opacity: 0, duration: 0.15 }, 0.25);
-        tl.to('.phone-device-wrap', { opacity: 1, duration: 0.18 }, 0.32);
-        tl.to('.phone-device-wrap', { filter: 'blur(0px) brightness(1)', duration: 0.2 }, 0.42);
-        tl.to('.chibi-hang',        { opacity: 1, duration: 0.15 }, 0.55);
-        tl.to(['.phone-device-wrap', '.chibi-hang'], { opacity: 0, duration: 0.1 }, 0.88);
+        function mobilePhaseUpdate() {
+          var top   = mSect.getBoundingClientRect().top;
+          var total = mSect.offsetHeight - window.innerHeight;
+          if (total <= 0) return;
+          var p = Math.max(0, Math.min(1, -top / total));
 
+          if (p < 0.28) {
+            // Phase 1 — spider-man + title
+            mChibi.style.opacity = '1';
+            mLeft.style.opacity  = '1';
+            mWrap.style.opacity  = '0';
+            mWrap.style.filter   = 'blur(10px) brightness(.4)';
+            if (mHang) mHang.style.opacity = '0';
+          } else if (p < 0.85) {
+            // Phase 2 — phone + chibi-hang accent
+            mChibi.style.opacity = '0';
+            mLeft.style.opacity  = '0';
+            mWrap.style.opacity  = '1';
+            mWrap.style.filter   = 'blur(0px) brightness(1)';
+            if (mHang) mHang.style.opacity = p > 0.5 ? '1' : '0';
+          } else {
+            // Exit
+            mWrap.style.opacity = '0';
+            if (mHang) mHang.style.opacity = '0';
+          }
+        }
+
+        mobilePhaseUpdate();
+        window.addEventListener('scroll', mobilePhaseUpdate, { passive: true });
+
+        // Auto-cycle feed slides every 3 s
         var mFeed = document.getElementById('phone-feed');
         if (mFeed) {
           var mSlides = mFeed.querySelectorAll('.phone-slide');
