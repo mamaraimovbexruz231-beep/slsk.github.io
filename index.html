@@ -1146,6 +1146,9 @@
       /* Hide desktop-only */
       #chibi-teacher, .chibi-end, .showcase-content { display: none; }
 
+      /* Prevent opacity-0 elements from blocking touch events on phone */
+      #chibi-start, .phone-left { pointer-events: none; }
+
       /* Compare section */
       .compare-backdrop-num { display: none; }
       .compare-stage { min-height: 280px; }
@@ -1768,110 +1771,90 @@
       gsap.to('.ambient-orb--3', { y: 50, x: -40, duration: 14, repeat: -1, yoyo: true, ease: 'sine.inOut' });
 
       // Phone showcase — scroll-driven video feed + chibi animations
-      ScrollTrigger.matchMedia({
-        '(min-width: 769px)': function() {
-          var feed = document.getElementById('phone-feed');
-          var slides = feed ? feed.querySelectorAll('.phone-slide') : [];
-          if (!feed || slides.length < 2) return;
+      // gsap.matchMedia() is the correct API for GSAP 3.11+ (ScrollTrigger.matchMedia was removed)
+      var mm = gsap.matchMedia();
 
-          var count = slides.length;
-          var maxY = -((count - 1) / count * 100);
+      mm.add('(min-width: 769px)', function() {
+        var feed = document.getElementById('phone-feed');
+        var slides = feed ? feed.querySelectorAll('.phone-slide') : [];
+        if (!feed || slides.length < 2) return;
 
-          var tl = gsap.timeline({
-            scrollTrigger: {
-              trigger: '#works',
-              start: 'top top',
-              end: 'bottom bottom',
-              scrub: 1.5
-            }
-          });
+        var count = slides.length;
+        var maxY = -((count - 1) / count * 100);
 
-          // Everything hidden at start except start chibi + blurred phone
-          gsap.set('.phone-device', { filter: 'blur(12px) brightness(0.5)' });
-          gsap.set('.phone-left', { opacity: 0, x: -40 });
-          gsap.set('#chibi-teacher', { opacity: 0, y: 40 });
-          gsap.set('#showcase-content', { opacity: 0, x: -30 });
-          gsap.set('#magic-beam', { opacity: 0 });
-          gsap.set('.chibi-hang', { opacity: 0, y: -40 });
-          gsap.set('#chibi-end', { opacity: 0 });
+        var tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: '#works',
+            start: 'top top',
+            end: 'bottom bottom',
+            scrub: 1.5
+          }
+        });
 
-          // Phase 1: Start chibi visible, then fades (0% → 20%)
-          tl.to('#chibi-start', { opacity: 0, y: -40, duration: 0.08 }, 0.12);
+        gsap.set('.phone-device', { filter: 'blur(12px) brightness(0.5)' });
+        gsap.set('.phone-left', { opacity: 0, x: -40 });
+        gsap.set('#chibi-teacher', { opacity: 0, y: 40 });
+        gsap.set('#showcase-content', { opacity: 0, x: -30 });
+        gsap.set('#magic-beam', { opacity: 0 });
+        gsap.set('.chibi-hang', { opacity: 0, y: -40 });
+        gsap.set('#chibi-end', { opacity: 0 });
 
-          // Phase 2: Title + phone sharpen + hanging chibi (20% → 35%)
-          tl.to('.phone-device', { filter: 'blur(0px) brightness(1)', duration: 0.1 }, 0.20);
-          tl.to('.phone-left', { opacity: 1, x: 0, duration: 0.1 }, 0.22);
-          tl.to('.chibi-hang', { opacity: 1, y: 0, duration: 0.08 }, 0.22);
+        tl.to('#chibi-start', { opacity: 0, y: -40, duration: 0.08 }, 0.12);
+        tl.to('.phone-device', { filter: 'blur(0px) brightness(1)', duration: 0.1 }, 0.20);
+        tl.to('.phone-left', { opacity: 1, x: 0, duration: 0.1 }, 0.22);
+        tl.to('.chibi-hang', { opacity: 1, y: 0, duration: 0.08 }, 0.22);
+        tl.to('.phone-left', { opacity: 0, x: -30, duration: 0.08 }, 0.35);
+        tl.to('#chibi-teacher', { opacity: 1, y: 0, duration: 0.1 }, 0.38);
+        tl.to('#showcase-content', { opacity: 1, x: 0, duration: 0.1 }, 0.37);
+        tl.to(feed, { yPercent: maxY, duration: 0.45, ease: 'none' }, 0.40);
+        tl.to('.phone-glow', { scale: 1.15, opacity: 0.8, duration: 0.2, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 0.40);
+        tl.to('#chibi-teacher', { opacity: 0, duration: 0.05 }, 0.68);
+        tl.to('#showcase-content', { opacity: 0, x: -20, duration: 0.05 }, 0.68);
+        tl.to('.chibi-hang', { opacity: 0, duration: 0.05 }, 0.68);
+        tl.to('.phone-device', { filter: 'blur(6px) brightness(0.5)', duration: 0.05 }, 0.70);
+        tl.to('.phone-glow', { opacity: 0.3, duration: 0.05 }, 0.70);
+        tl.to('#chibi-end', { opacity: 1, duration: 0.06 }, 0.73);
+        tl.from('.thought-bubble', { scale: 0, opacity: 0, duration: 0.05, ease: 'back.out(2)' }, 0.77);
+      });
 
-          // Phase 3: Title fades, teacher chibi appears big (35% → 50%)
-          tl.to('.phone-left', { opacity: 0, x: -30, duration: 0.08 }, 0.35);
-          tl.to('#chibi-teacher', { opacity: 1, y: 0, duration: 0.1 }, 0.38);
-          tl.to('#showcase-content', { opacity: 1, x: 0, duration: 0.1 }, 0.37);
+      mm.add('(max-width: 768px)', function() {
+        // GSAP owns ALL states
+        gsap.set('#chibi-start',      { opacity: 1 });
+        gsap.set('.phone-left',       { opacity: 1 });
+        gsap.set('.phone-device-wrap', { opacity: 0, filter: 'blur(10px) brightness(.4)' });
+        gsap.set('.chibi-hang',       { opacity: 0 });
 
-          // Phase 4: Video feed scrolls (40% → 85%)
-          tl.to(feed, {
-            yPercent: maxY,
-            duration: 0.45,
-            ease: 'none'
-          }, 0.40);
+        var tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: '.phone-sect',
+            start: 'top top',
+            end: 'bottom bottom',
+            scrub: 1
+          }
+        });
 
-          tl.to('.phone-glow', {
-            scale: 1.15, opacity: 0.8,
-            duration: 0.2, yoyo: true, repeat: 1, ease: 'sine.inOut'
-          }, 0.40);
+        // Phase 1→2: chibi + title fade, phone appears
+        tl.to('#chibi-start',       { opacity: 0, duration: 0.2  }, 0.25);
+        tl.to('.phone-left',        { opacity: 0, duration: 0.15 }, 0.25);
+        tl.to('.phone-device-wrap', { opacity: 1, duration: 0.18 }, 0.32);
+        tl.to('.phone-device-wrap', { filter: 'blur(0px) brightness(1)', duration: 0.2 }, 0.42);
 
-          // Phase 5: Outro — everything fades, end chibi takes center stage
-          tl.to('#chibi-teacher', { opacity: 0, duration: 0.05 }, 0.68);
-          tl.to('#showcase-content', { opacity: 0, x: -20, duration: 0.05 }, 0.68);
-          tl.to('.chibi-hang', { opacity: 0, duration: 0.05 }, 0.68);
-          tl.to('.phone-device', { filter: 'blur(6px) brightness(0.5)', duration: 0.05 }, 0.70);
-          tl.to('.phone-glow', { opacity: 0.3, duration: 0.05 }, 0.70);
-          tl.to('#chibi-end', { opacity: 1, duration: 0.06 }, 0.73);
-          tl.from('.thought-bubble', { scale: 0, opacity: 0, duration: 0.05, ease: 'back.out(2)' }, 0.77);
-        },
+        // Phase 2 accent: chibi-hang appears
+        tl.to('.chibi-hang', { opacity: 1, duration: 0.15 }, 0.55);
 
-        // Mobile: clean 2-phase sticky swap
-        '(max-width: 768px)': function() {
-          // GSAP owns ALL opacity — no CSS !important fighting
-          gsap.set('#chibi-start',        { opacity: 1 });  // phase 1 visible
-          gsap.set('.phone-left',          { opacity: 1 });  // phase 1 visible
-          gsap.set('.phone-device-wrap',   { opacity: 0, filter: 'blur(10px) brightness(.4)' }); // phase 2 hidden
-          gsap.set('.chibi-hang',          { opacity: 0 });  // phase 2 accent, hidden initially
+        // Exit
+        tl.to(['.phone-device-wrap', '.chibi-hang'], { opacity: 0, duration: 0.1 }, 0.88);
 
-          var tl = gsap.timeline({
-            scrollTrigger: {
-              trigger: '.phone-sect',
-              start: 'top top',
-              end: 'bottom bottom',
-              scrub: 1
-            }
-          });
-
-          // ─ Phase 1→2 crossfade (25%–50% of scroll) ─
-          // Chibi + title fade out
-          tl.to('#chibi-start', { opacity: 0, duration: 0.2 }, 0.25);
-          tl.to('.phone-left',  { opacity: 0, duration: 0.15 }, 0.25);
-          // Phone fades in blurred, then sharpens
-          tl.to('.phone-device-wrap', { opacity: 1, duration: 0.18 }, 0.32);
-          tl.to('.phone-device-wrap', { filter: 'blur(0px) brightness(1)', duration: 0.2 }, 0.42);
-
-          // ─ Phase 2 accent: chibi-hang slides in at bottom-left (55%–80%) ─
-          tl.to('.chibi-hang', { opacity: 1, duration: 0.15 }, 0.55);
-
-          // ─ Exit (88%–100%) ─
-          tl.to(['.phone-device-wrap', '.chibi-hang'], { opacity: 0, duration: 0.1 }, 0.88);
-
-          // Auto-cycle feed
-          var feed = document.getElementById('phone-feed');
-          if (!feed) return;
-          var slides = feed.querySelectorAll('.phone-slide');
-          if (slides.length < 2) return;
-          var cur = 0;
-          setInterval(function() {
-            cur = (cur + 1) % slides.length;
-            gsap.to(feed, { yPercent: -(cur / slides.length * 100), duration: 0.6, ease: 'power2.inOut' });
-          }, 3000);
-        }
+        // Auto-cycle feed
+        var feed = document.getElementById('phone-feed');
+        if (!feed) return;
+        var slides = feed.querySelectorAll('.phone-slide');
+        if (slides.length < 2) return;
+        var cur = 0;
+        setInterval(function() {
+          cur = (cur + 1) % slides.length;
+          gsap.to(feed, { yPercent: -(cur / slides.length * 100), duration: 0.6, ease: 'power2.inOut' });
+        }, 3000);
       });
 
 
