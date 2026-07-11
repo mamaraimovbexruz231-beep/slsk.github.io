@@ -1109,11 +1109,11 @@
       .edits-accent { margin: 8px auto 0; }
 
       /* Spider-man — center of viewport, below title */
+      /* No opacity !important here — GSAP owns the opacity on mobile */
       .chibi-start {
         position: absolute !important;
         top: 50%; left: 50%;
         transform: translate(-50%, -38%) !important;
-        opacity: 1 !important;
         margin: 0;
       }
       .chibi-start img { width: clamp(170px, 50vw, 210px); }
@@ -1817,11 +1817,10 @@
 
         // Mobile: clean 2-phase sticky swap
         '(max-width: 768px)': function() {
-          // Phase 2 elements start hidden
-          gsap.set('.phone-device-wrap', { opacity: 0, filter: 'blur(10px) brightness(.4)' });
-          // Phase 1 elements start visible (CSS handles chibi-start opacity)
-          // Clear any leftover desktop transforms
-          gsap.set('.phone-left', { clearProps: 'opacity' });
+          // GSAP owns ALL opacity — no CSS !important fighting
+          gsap.set('#chibi-start',        { opacity: 1 });  // phase 1 visible
+          gsap.set('.phone-left',          { opacity: 1 });  // phase 1 visible
+          gsap.set('.phone-device-wrap',   { opacity: 0, filter: 'blur(10px) brightness(.4)' }); // phase 2 hidden
 
           var tl = gsap.timeline({
             scrollTrigger: {
