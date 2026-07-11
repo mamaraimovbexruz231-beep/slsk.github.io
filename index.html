@@ -1091,48 +1091,46 @@
       /* Hero */
       .hero-subtitle { font-size: .78rem; letter-spacing: 1px; }
 
-      /* Phone showcase — 2-phase sticky swap */
-      .phone-sect { height: 250vh; min-height: auto; padding: 0; }
-      .phone-pin {
-        height: 100vh;
-        position: sticky; top: 0;
-        overflow: hidden;
-      }
+      /* Phone showcase — static 100vh, CSS animation sequence */
+      .phone-sect { height: 100vh; min-height: 560px; padding: 0; }
+      .phone-pin { height: 100%; position: relative; overflow: hidden; }
       .ambient-vid { display: none; }
 
-      /* ── Phase 1: chibi only ─────────────────────────── */
-      /* Title sits above chibi as a caption */
+      /* EDITS title — top-center, hidden until animation plays */
       .phone-left {
         position: absolute !important;
-        top: 76px; left: 0; right: 0;
+        top: 60px; left: 0; right: 0;
         text-align: center;
         transform: none !important;
+        opacity: 0;
       }
       .edits-eyebrow { font-size: .85rem; }
       .edits-hero { font-size: clamp(1.8rem, 8vw, 2.8rem); }
       .edits-accent { margin: 8px auto 0; }
 
-      /* Spider-man — center of viewport, below title */
-      /* No opacity !important here — GSAP owns the opacity on mobile */
+      /* Spider-man chibi — center, hidden until animation plays */
       .chibi-start {
         position: absolute !important;
         top: 50%; left: 50%;
-        transform: translate(-50%, -38%) !important;
+        transform: translate(-50%, -40%) !important;
         margin: 0;
+        opacity: 0;
       }
-      .chibi-start img { width: clamp(170px, 50vw, 210px); }
+      .chibi-start img { width: clamp(160px, 46vw, 200px); }
       .chibi-bubble { font-size: .72rem; margin-top: -44px; }
 
-      /* ── Phase 2: phone only (hidden initially) ─────── */
+      /* Phone — center, hidden until animation plays */
       .phone-device-wrap {
         position: absolute !important;
         top: 50%; left: 50%;
         transform: translate(-50%, -50%) !important;
+        opacity: 0;
+        filter: blur(10px) brightness(.4);
       }
       .phone-device { width: 58vw; max-width: 224px; }
       .phone-glow { width: 195px; height: 284px; opacity: .5; }
 
-      /* Chibi-hang — small accent, bottom-left, appears in phase 2 */
+      /* Chibi-hang — bottom-left accent, hidden until animation plays */
       .chibi-hang {
         position: absolute !important;
         bottom: 10px; left: 3%;
@@ -1147,10 +1145,42 @@
         mask-image: none !important;
       }
 
+      /* ── Animation sequence (fires when .m-play is added by IntersectionObserver) ── */
+      /* Chibi + title: fade in → hold → fade out */
+      .phone-sect.m-play .chibi-start {
+        animation: mChibiLife 2.6s ease-in-out 0.3s both !important;
+      }
+      .phone-sect.m-play .phone-left {
+        animation: mChibiLife 2.4s ease-in-out 0.2s both !important;
+      }
+      /* Phone: appear after chibi leaves */
+      .phone-sect.m-play .phone-device-wrap {
+        animation: mPhoneIn 0.8s cubic-bezier(.22,1,.36,1) 2.5s both !important;
+      }
+      /* Chibi-hang: small accent after phone */
+      .phone-sect.m-play .chibi-hang {
+        animation: mFadeIn 0.5s ease-out 3.6s both !important;
+      }
+
+      @keyframes mChibiLife {
+        0%   { opacity: 0; }
+        18%  { opacity: 1; }
+        75%  { opacity: 1; }
+        100% { opacity: 0; }
+      }
+      @keyframes mPhoneIn {
+        from { opacity: 0; filter: blur(10px) brightness(.4); }
+        to   { opacity: 1; filter: blur(0px) brightness(1); }
+      }
+      @keyframes mFadeIn {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+      }
+
       /* Hide desktop-only */
       #chibi-teacher, .chibi-end, .showcase-content { display: none; }
 
-      /* Prevent opacity-0 elements from blocking touch events on phone */
+      /* Prevent invisible elements from blocking touch */
       #chibi-start, .phone-left { pointer-events: none; }
 
       /* Compare section */
@@ -1810,51 +1840,19 @@
           tl.from('.thought-bubble', { scale: 0, opacity: 0, duration: 0.05, ease: 'back.out(2)' }, 0.77);
         }
       } else {
-        // ── Mobile: plain scroll listener, no GSAP ScrollTrigger ─────────────
-        var mSect    = document.querySelector('.phone-sect');
-        var mChibi   = document.getElementById('chibi-start');
-        var mLeft    = document.querySelector('.phone-left');
-        var mWrap    = document.querySelector('.phone-device-wrap');
-        var mHang    = document.querySelector('.chibi-hang');
-        if (!mSect || !mChibi || !mWrap) return;
-
-        // Initial visible state — override anything CSS/other-JS set
-        mChibi.style.cssText += ';opacity:1;transition:opacity .4s';
-        mLeft.style.cssText  += ';opacity:1;transition:opacity .4s';
-        mWrap.style.cssText  += ';opacity:0;filter:blur(10px) brightness(.4);transition:opacity .45s,filter .45s';
-        if (mHang) mHang.style.cssText += ';opacity:0;transition:opacity .4s';
-
-        function mobilePhaseUpdate() {
-          var top   = mSect.getBoundingClientRect().top;
-          var total = mSect.offsetHeight - window.innerHeight;
-          if (total <= 0) return;
-          var p = Math.max(0, Math.min(1, -top / total));
-
-          if (p < 0.28) {
-            // Phase 1 — spider-man + title
-            mChibi.style.opacity = '1';
-            mLeft.style.opacity  = '1';
-            mWrap.style.opacity  = '0';
-            mWrap.style.filter   = 'blur(10px) brightness(.4)';
-            if (mHang) mHang.style.opacity = '0';
-          } else if (p < 0.85) {
-            // Phase 2 — phone + chibi-hang accent
-            mChibi.style.opacity = '0';
-            mLeft.style.opacity  = '0';
-            mWrap.style.opacity  = '1';
-            mWrap.style.filter   = 'blur(0px) brightness(1)';
-            if (mHang) mHang.style.opacity = p > 0.5 ? '1' : '0';
-          } else {
-            // Exit
-            mWrap.style.opacity = '0';
-            if (mHang) mHang.style.opacity = '0';
-          }
+        // ── Mobile: CSS animation sequence triggered by IntersectionObserver ──
+        var mSect = document.querySelector('.phone-sect');
+        if (mSect) {
+          var mObs = new IntersectionObserver(function(entries) {
+            if (entries[0].isIntersecting) {
+              mSect.classList.add('m-play');
+              mObs.disconnect();
+            }
+          }, { threshold: 0.25 });
+          mObs.observe(mSect);
         }
 
-        mobilePhaseUpdate();
-        window.addEventListener('scroll', mobilePhaseUpdate, { passive: true });
-
-        // Auto-cycle feed slides every 3 s
+        // Auto-cycle feed slides every 3s
         var mFeed = document.getElementById('phone-feed');
         if (mFeed) {
           var mSlides = mFeed.querySelectorAll('.phone-slide');
