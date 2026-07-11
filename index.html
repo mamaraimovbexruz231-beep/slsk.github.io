@@ -1087,47 +1087,48 @@
       /* Hero */
       .hero-subtitle { font-size: .78rem; letter-spacing: 1px; }
 
-      /* Phone showcase — sticky scroll, same architecture as desktop */
+      /* Phone showcase — 2-phase sticky swap */
       .phone-sect { height: 250vh; min-height: auto; padding: 0; }
       .phone-pin {
         height: 100vh;
         position: sticky; top: 0;
         overflow: hidden;
-        /* No flex — absolute layering like desktop */
       }
       .ambient-vid { display: none; }
 
-      /* Phone device — centered */
-      .phone-device-wrap {
-        position: absolute !important;
-        top: 50%; left: 50%;
-        transform: translate(-50%, -46%) !important;
-      }
-      .phone-device { width: 60vw; max-width: 230px; }
-      .phone-glow { width: 190px; height: 280px; opacity: .6; }
-
-      /* EDITS title — top center */
+      /* ── Phase 1: chibi only ─────────────────────────── */
+      /* Title sits above chibi as a caption */
       .phone-left {
         position: absolute !important;
-        top: 72px; left: 50%;
-        transform: translateX(-50%) !important;
-        text-align: center; white-space: nowrap;
+        top: 76px; left: 0; right: 0;
+        text-align: center;
+        transform: none !important;
       }
-      .edits-eyebrow { font-size: 1rem; }
-      .edits-hero { font-size: clamp(2.8rem, 13vw, 4.5rem); }
+      .edits-eyebrow { font-size: .85rem; }
+      .edits-hero { font-size: clamp(1.8rem, 8vw, 2.8rem); }
+      .edits-accent { margin: 8px auto 0; }
 
-      /* Spider-man chibi — bottom center, prominent, visible initially */
+      /* Spider-man — center of viewport, below title */
       .chibi-start {
         position: absolute !important;
-        bottom: 6%; left: 50%;
-        transform: translateX(-50%) !important;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -38%) !important;
         opacity: 1 !important;
         margin: 0;
       }
-      .chibi-start img { width: clamp(160px, 48vw, 210px); }
-      .chibi-bubble { font-size: .72rem; margin-top: -48px; }
+      .chibi-start img { width: clamp(170px, 50vw, 210px); }
+      .chibi-bubble { font-size: .72rem; margin-top: -44px; }
 
-      /* Hide on mobile — these don't translate to small screen */
+      /* ── Phase 2: phone only (hidden initially) ─────── */
+      .phone-device-wrap {
+        position: absolute !important;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%) !important;
+      }
+      .phone-device { width: 58vw; max-width: 224px; }
+      .phone-glow { width: 195px; height: 284px; opacity: .5; }
+
+      /* Hide desktop-only */
       #chibi-teacher, .chibi-hang, .chibi-end, .showcase-content { display: none; }
 
       /* Compare section */
@@ -1814,14 +1815,13 @@
           tl.from('.thought-bubble', { scale: 0, opacity: 0, duration: 0.05, ease: 'back.out(2)' }, 0.77);
         },
 
-        // Mobile: 2-phase sticky scroll
+        // Mobile: clean 2-phase sticky swap
         '(max-width: 768px)': function() {
-          // Clear everything GSAP may have set
-          gsap.set('.phone-left, .phone-device-wrap, #chibi-start', { clearProps: 'all' });
-
-          // Initial state: phone hidden behind chibi-start
-          gsap.set('.phone-left',      { opacity: 0 });
+          // Phase 2 elements start hidden
           gsap.set('.phone-device-wrap', { opacity: 0, filter: 'blur(10px) brightness(.4)' });
+          // Phase 1 elements start visible (CSS handles chibi-start opacity)
+          // Clear any leftover desktop transforms
+          gsap.set('.phone-left', { clearProps: 'opacity' });
 
           var tl = gsap.timeline({
             scrollTrigger: {
@@ -1832,16 +1832,16 @@
             }
           });
 
-          // Phase 1 → 2 (0% – 40%): chibi fades, title + blurred phone fade in
-          tl.to('#chibi-start',       { opacity: 0, duration: 0.22 }, 0.08);
-          tl.to('.phone-left',        { opacity: 1, duration: 0.2  }, 0.14);
-          tl.to('.phone-device-wrap', { opacity: 1, duration: 0.2  }, 0.18);
+          // ─ Phase 1→2 crossfade (25%–50% of scroll) ─
+          // Chibi + title fade out
+          tl.to('#chibi-start', { opacity: 0, duration: 0.2 }, 0.25);
+          tl.to('.phone-left',  { opacity: 0, duration: 0.15 }, 0.25);
+          // Phone fades in blurred, then sharpens
+          tl.to('.phone-device-wrap', { opacity: 1, duration: 0.18 }, 0.32);
+          tl.to('.phone-device-wrap', { filter: 'blur(0px) brightness(1)', duration: 0.2 }, 0.42);
 
-          // Phase 2 → 3 (40% – 65%): phone sharpens
-          tl.to('.phone-device-wrap', { filter: 'blur(0px) brightness(1)', duration: 0.25 }, 0.40);
-
-          // Exit (88% – 100%): fade out before next section
-          tl.to(['.phone-left', '.phone-device-wrap'], { opacity: 0, duration: 0.1 }, 0.88);
+          // ─ Exit (88%–100%) ─
+          tl.to('.phone-device-wrap', { opacity: 0, duration: 0.1 }, 0.88);
 
           // Auto-cycle feed
           var feed = document.getElementById('phone-feed');
