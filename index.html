@@ -1078,26 +1078,69 @@
 
     /* === RESPONSIVE === */
     @media (max-width: 768px) {
+      /* Nav */
       .nav { padding: 0 16px; }
-      .nav-links { gap: 16px; }
-      .nav-links a { font-size: .65rem; letter-spacing: 1.5px; }
+      .nav-links { gap: 12px; }
+      .nav-links a { font-size: .6rem; letter-spacing: 1px; }
       .cursor-glow { display: none; }
 
-      /* Phone showcase mobile */
-      .phone-sect { padding: clamp(80px, 12vw, 100px) 0; }
-      .phone-pin { height: auto; display: flex; flex-direction: column; align-items: center; padding: 0 20px; gap: 24px; }
-      .phone-left { position: static; transform: none; text-align: center; max-width: none; }
-      .phone-device-wrap { position: static; transform: none; }
-      .phone-device { width: 65vw; max-width: 280px; }
-      #chibi-teacher, .chibi-hang, .chibi-start, .chibi-end, .showcase-content { display: none; }
-      .phone-glow { width: 280px; height: 400px; }
+      /* Hero */
+      .hero-subtitle { font-size: .78rem; letter-spacing: 1px; }
 
+      /* Phone showcase — full mobile redesign */
+      .phone-sect { height: auto; min-height: auto; padding: 80px 0 60px; }
+      .phone-pin {
+        height: auto;
+        position: relative;
+        overflow: visible;
+        display: flex; flex-direction: column;
+        align-items: center;
+        padding: 0 20px;
+        gap: 28px;
+      }
+      .ambient-vid { display: none; }
+      .phone-left { position: static; transform: none; text-align: center; max-width: none; opacity: 1 !important; }
+      .phone-device-wrap { position: static; transform: none; }
+      .phone-device { width: 68vw; max-width: 260px; filter: none !important; }
+      .phone-glow { width: 220px; height: 320px; opacity: .5; }
+
+      /* Chibi start — show as static decoration below phone */
+      .chibi-start {
+        position: static !important;
+        transform: none !important;
+        opacity: 1 !important;
+        margin-top: -16px;
+      }
+      .chibi-start img { width: clamp(140px, 42vw, 200px); }
+      .chibi-bubble { margin-top: -50px; font-size: .75rem; }
+
+      /* Hide desktop-only chibis and content */
+      #chibi-teacher, .chibi-hang, .chibi-end, .showcase-content { display: none; }
+
+      /* Compare section */
+      .compare-stage { min-height: 280px; }
+      .compare-header { padding: 0 20px; }
+      .cmp-label-big { display: none; }
+
+      /* Portal */
+      .portal-sect { min-height: 70vh; }
+
+      /* Community */
+      .community-heading { letter-spacing: -1px; }
+
+      /* Contact */
+      .contact-inner { padding-left: clamp(20px, 6vw, 60px); }
+
+      /* Footer */
       .footer-row { flex-direction: column; gap: 6px; text-align: center; }
     }
     @media (max-width: 480px) {
+      .hero-title { letter-spacing: -1px; }
       .hero-actions { flex-direction: column; align-items: center; }
       .btn-ghost, .btn-accent { width: 100%; text-align: center; }
       .sect { padding: clamp(60px, 10vw, 100px) 0; }
+      .phone-device { width: 80vw; max-width: 240px; }
+      .chibi-start img { width: clamp(120px, 38vw, 170px); }
     }
 
     /* ── LINE-MASK REVEAL — editorial heading technique ── */
@@ -1260,7 +1303,7 @@
   <section class="hero">
     <div class="hero-video" aria-hidden="true">
       <video autoplay muted loop playsinline>
-        <source src="goku.mp4" type="video/mp4" />
+        <source src="https://pub-32fafbd50ecc4342bfdff8ec680aa694.r2.dev/goku.mp4" type="video/mp4" />
       </video>
     </div>
     <div class="hero-content">
@@ -1552,7 +1595,7 @@
     <section id="contact" class="sect contact-sect">
       <div class="contact-bg" aria-hidden="true">
         <video autoplay muted loop playsinline>
-          <source src="email.mp4" type="video/mp4" />
+          <source src="https://pub-32fafbd50ecc4342bfdff8ec680aa694.r2.dev/email.mp4" type="video/mp4" />
         </video>
       </div>
       <!-- Radar rings — signal sent into the cosmos -->
@@ -1756,14 +1799,19 @@
           tl.from('.thought-bubble', { scale: 0, opacity: 0, duration: 0.05, ease: 'back.out(2)' }, 0.77);
         },
 
-        // Mobile: simple autoplay feed (no pin)
+        // Mobile: static layout, auto-cycling feed
         '(max-width: 768px)': function() {
+          // Clear any stale GSAP inline styles from desktop path
+          gsap.set('.phone-left', { clearProps: 'all' });
+          gsap.set('.phone-device', { clearProps: 'all' });
+          gsap.set('#chibi-start', { clearProps: 'all' });
+
           var feed = document.getElementById('phone-feed');
           if (!feed) return;
           var slides = feed.querySelectorAll('.phone-slide');
           if (slides.length < 2) return;
 
-          // On mobile, auto-cycle the feed every 3 seconds
+          // Auto-cycle the feed every 3 seconds
           var current = 0;
           setInterval(function() {
             current = (current + 1) % slides.length;
