@@ -1115,11 +1115,27 @@
       .chibi-bubble { margin-top: -50px; font-size: .75rem; }
 
       /* Hide desktop-only chibis and content */
-      #chibi-teacher, .chibi-hang, .chibi-end, .showcase-content { display: none; }
+      #chibi-teacher, .chibi-end, .showcase-content { display: none; }
+
+      /* Chibi-hang — show below the phone mockup, scroll-revealed */
+      .chibi-hang {
+        position: static !important;
+        animation: none !important;
+        -webkit-mask-image: none !important;
+        mask-image: none !important;
+        margin-top: -8px;
+      }
+      .chibi-hang img {
+        width: clamp(160px, 50vw, 240px);
+        -webkit-mask-image: none !important;
+        mask-image: none !important;
+      }
 
       /* Compare section */
+      .compare-backdrop-num { display: none; }
       .compare-stage { min-height: 280px; }
-      .compare-header { padding: 0 20px; }
+      .compare-header { padding: 48px 24px 24px; width: 100%; }
+      .compare-title { font-size: clamp(2rem, 8vw, 3.5rem); letter-spacing: -1px; }
       .cmp-label-big { display: none; }
 
       /* Portal */
@@ -1799,19 +1815,32 @@
           tl.from('.thought-bubble', { scale: 0, opacity: 0, duration: 0.05, ease: 'back.out(2)' }, 0.77);
         },
 
-        // Mobile: static layout, auto-cycling feed
+        // Mobile: static layout, auto-cycling feed, scroll-revealed chibis
         '(max-width: 768px)': function() {
           // Clear any stale GSAP inline styles from desktop path
           gsap.set('.phone-left', { clearProps: 'all' });
           gsap.set('.phone-device', { clearProps: 'all' });
           gsap.set('#chibi-start', { clearProps: 'all' });
 
+          // chibi-hang: start invisible, fade in when scrolled to
+          var chibiHang = document.querySelector('.chibi-hang');
+          if (chibiHang) {
+            gsap.set(chibiHang, { opacity: 0, y: 28 });
+            var hangObs = new IntersectionObserver(function(entries) {
+              if (entries[0].isIntersecting) {
+                gsap.to(chibiHang, { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out' });
+                hangObs.disconnect();
+              }
+            }, { threshold: 0.15 });
+            hangObs.observe(chibiHang);
+          }
+
+          // Auto-cycle the feed every 3 seconds
           var feed = document.getElementById('phone-feed');
           if (!feed) return;
           var slides = feed.querySelectorAll('.phone-slide');
           if (slides.length < 2) return;
 
-          // Auto-cycle the feed every 3 seconds
           var current = 0;
           setInterval(function() {
             current = (current + 1) % slides.length;

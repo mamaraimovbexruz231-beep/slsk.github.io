@@ -918,6 +918,24 @@
     @media (max-width: 768px) {
       .sidebar { display: none; }
       .page { margin-left: 0; }
+
+      /* Dash hero — single column, intentional layout */
+      .dash {
+        grid-template-columns: 1fr;
+        min-height: auto;
+        padding: 72px 24px 52px;
+        gap: 0;
+      }
+      .dash-right { display: none; }
+      .dash-left { max-width: none; padding-top: 0; }
+      .dash-title { font-size: clamp(2.2rem, 10vw, 3.2rem); margin-bottom: 12px; }
+      .dash-desc { font-size: .8rem; margin-bottom: 20px; }
+      .dash-actions { flex-direction: column; gap: 10px; margin-bottom: 20px; }
+      .btn-primary, .btn-secondary { width: 100%; text-align: center; }
+      .socials { margin-top: 0; }
+      .quick-stats { gap: 24px; margin-top: 28px; }
+
+      /* Video panels */
       .vp-wrap { flex-direction: column; height: auto; }
       .vp { flex: none !important; min-height: 72px; }
       .vp-name { white-space: normal; }
