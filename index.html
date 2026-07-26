@@ -648,39 +648,100 @@
     .portal-click-zone {
       position: absolute; inset: 0; z-index: 4; cursor: pointer;
     }
+    /* Three-zone layout: headline (top) · enter ring (center) · toolkit (bottom) */
     .portal-inner {
       position: relative; z-index: 5;
       display: flex; flex-direction: column;
       align-items: center; text-align: center;
       min-height: 100vh;
-      justify-content: flex-end;
-      padding-bottom: clamp(48px, 8vh, 80px);
+      justify-content: space-between;
+      padding: clamp(96px, 15vh, 150px) 24px clamp(44px, 7vh, 72px);
       pointer-events: none;
     }
-    /* Dark gradient behind text so it reads over the portal glow */
+    /* Gradient scrims so text reads over the portal glow — top and bottom */
     .portal-bottom-fade {
-      position: absolute; bottom: 0; left: 0; right: 0;
-      height: 220px; z-index: 3; pointer-events: none;
-      background: linear-gradient(to top, rgba(8,7,14,.90) 0%, rgba(8,7,14,.4) 55%, transparent 100%);
+      position: absolute; inset: 0; z-index: 3; pointer-events: none;
+      background:
+        linear-gradient(to bottom, rgba(8,7,14,.88) 0%, rgba(8,7,14,.25) 26%, transparent 44%),
+        linear-gradient(to top,    rgba(8,7,14,.88) 0%, rgba(8,7,14,.25) 22%, transparent 40%);
     }
+
+    /* ── Top: eyebrow + editorial headline ── */
+    .portal-head { display: flex; flex-direction: column; align-items: center; }
     .portal-label {
       font-size: clamp(.6rem, .9vw, .72rem);
       letter-spacing: 5px; text-transform: uppercase;
-      color: rgba(240,240,240,.38);
-      margin-bottom: 8px;
+      color: rgba(168,85,247,.75);
+      margin-bottom: 14px;
     }
-    .portal-cta {
-      font-size: clamp(1rem, 1.6vw, 1.25rem);
-      font-weight: 500; color: rgba(240,240,240,.82);
-      letter-spacing: .4px; line-height: 1.5;
-      max-width: 500px;
-      text-shadow: 0 0 30px rgba(168,85,247,.5);
+    .portal-title {
+      font-size: clamp(2.1rem, 5.2vw, 3.9rem);
+      font-weight: 800; letter-spacing: -1.6px; line-height: 1.03;
+      color: #f4f4f6;
+      text-shadow: 0 0 50px rgba(8,7,14,.9);
     }
-    .portal-cta span {
+    .portal-title span {
       background: var(--grad);
       -webkit-background-clip: text; background-clip: text; color: transparent;
-      font-weight: 700;
     }
+    .portal-sub {
+      margin-top: 14px;
+      font-size: clamp(.78rem, 1.1vw, .92rem);
+      color: rgba(240,240,240,.42);
+      letter-spacing: .3px; max-width: 420px;
+    }
+
+    /* ── Center: ENTER ring, sits over the portal core ── */
+    .portal-enter {
+      position: relative;
+      width:  clamp(96px, 10.5vw, 130px);
+      height: clamp(96px, 10.5vw, 130px);
+      display: grid; place-items: center;
+      border-radius: 50%;
+      border: 1px solid rgba(168,85,247,.4);
+      background: rgba(8,7,14,.3);
+      backdrop-filter: blur(2px);
+      transition: transform .5s cubic-bezier(.22,1,.36,1),
+                  border-color .5s ease, box-shadow .5s ease;
+    }
+    .portal-enter-text {
+      font-size: clamp(.6rem, .78vw, .7rem);
+      letter-spacing: 4.5px; text-transform: uppercase;
+      font-weight: 600; color: rgba(245,245,248,.92);
+      text-indent: 4.5px; /* optical centering against the letter-spacing */
+    }
+    /* Two ripples pulsing outward — the portal "breathing" */
+    .portal-enter::before,
+    .portal-enter::after {
+      content: ''; position: absolute; inset: -1px;
+      border-radius: 50%;
+      border: 1px solid rgba(168,85,247,.5);
+      animation: portalRipple 3.4s cubic-bezier(.22,.61,.36,1) infinite;
+      pointer-events: none;
+    }
+    .portal-enter::after { animation-delay: 1.7s; }
+    @keyframes portalRipple {
+      0%   { transform: scale(1);   opacity: .65; }
+      100% { transform: scale(2.1); opacity: 0; }
+    }
+    /* Whole section is the click target, so hover anywhere lights the ring */
+    .portal-sect:hover .portal-enter {
+      transform: scale(1.1);
+      border-color: rgba(168,85,247,.95);
+      box-shadow: 0 0 46px rgba(168,85,247,.35),
+                  inset 0 0 26px rgba(168,85,247,.16);
+    }
+
+    /* ── Bottom: what's on the other side ── */
+    .portal-tools {
+      display: flex; align-items: center;
+      gap: clamp(10px, 1.6vw, 20px);
+      flex-wrap: wrap; justify-content: center;
+      font-size: clamp(.58rem, .8vw, .68rem);
+      letter-spacing: 2.6px; text-transform: uppercase;
+      color: rgba(240,240,240,.34);
+    }
+    .portal-tools i { color: rgba(168,85,247,.5); font-style: normal; }
 
     /* Expands from center to swallow the screen */
     #portal-blackout {
@@ -1147,7 +1208,15 @@
       .cmp-label-big { display: none; }
 
       /* Portal */
-      .portal-sect { min-height: 70vh; }
+      .portal-sect { min-height: 88vh; }
+      .portal-inner {
+        min-height: 88vh;
+        padding: clamp(64px, 11vh, 90px) 20px clamp(32px, 5vh, 48px);
+      }
+      .portal-title { font-size: clamp(1.9rem, 9vw, 2.6rem); letter-spacing: -1px; }
+      .portal-sub { font-size: .76rem; margin-top: 10px; }
+      .portal-enter { width: 92px; height: 92px; }
+      .portal-tools { gap: 8px; letter-spacing: 1.8px; font-size: .55rem; }
 
       /* Community */
       .community-heading { letter-spacing: -1px; }
@@ -1571,12 +1640,26 @@
       <canvas id="bh-canvas" aria-hidden="true"></canvas>
       <div class="portal-click-zone" id="portal-btn"></div>
 
-      <!-- Bottom fade — makes text readable over portal glow -->
+      <!-- Top/bottom scrims — make text readable over portal glow -->
       <div class="portal-bottom-fade" aria-hidden="true"></div>
 
       <div class="portal-inner">
-        <div class="portal-label">Tutorials</div>
-        <div class="portal-cta">Step through the portal to see<br>what I <span>edit with</span></div>
+        <div class="portal-head">
+          <div class="portal-label">Tutorials</div>
+          <h2 class="portal-title">Everything I <span>edit with</span></h2>
+          <p class="portal-sub">The apps, presets, and workflow behind every edit.</p>
+        </div>
+
+        <div class="portal-enter" aria-hidden="true">
+          <span class="portal-enter-text">Enter</span>
+        </div>
+
+        <div class="portal-tools" aria-hidden="true">
+          <span>Alight Motion</span><i>·</i>
+          <span>Node Video</span><i>·</i>
+          <span>CapCut</span><i>·</i>
+          <span>Wink</span>
+        </div>
       </div>
     </section>
 
@@ -2126,8 +2209,9 @@
             }
           });
 
-          // Text fades out
-          tl.to('.portal-label, .portal-cta', { opacity: 0, duration: 0.15, ease: 'power1.in' }, 0);
+          // Text + ring fade out as you're pulled in
+          tl.to('.portal-head, .portal-tools', { opacity: 0, duration: 0.15, ease: 'power1.in' }, 0);
+          tl.to('.portal-enter', { opacity: 0, scale: 1.6, duration: 0.35, ease: 'power2.in' }, 0);
 
           // Pull viewer deeper — stretches tunnel perspective (flying in)
           tl.to(uni.uEnter, { value: 1.0, duration: 0.9, ease: 'power2.in' }, 0);
