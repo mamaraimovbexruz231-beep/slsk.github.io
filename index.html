@@ -1324,7 +1324,7 @@
   </nav>
 
   <!-- Hero -->
-  <section class="hero">
+  <section class="hero" data-reveal="manual">
     <div class="hero-video" aria-hidden="true">
       <video autoplay muted loop playsinline>
         <source src="https://pub-32fafbd50ecc4342bfdff8ec680aa694.r2.dev/goku.mp4" type="video/mp4" />
@@ -1366,7 +1366,7 @@
   <main id="main" tabindex="-1">
 
     <!-- 01 — Selected Works (Phone Showcase) -->
-    <section id="works" class="sect phone-sect">
+    <section id="works" class="sect phone-sect" data-reveal="manual">
       <div class="phone-pin">
 
         <!-- Ambient blurred video (background atmosphere) -->
@@ -1500,13 +1500,13 @@
 
 
     <!-- 02 — Before / After -->
-    <section id="compare" class="compare-sect">
+    <section id="compare" class="compare-sect" data-reveal="manual">
       <div class="compare-backdrop-num" aria-hidden="true">02</div>
 
       <div class="compare-header">
         <h2 class="compare-title">
-          <span class="ct-outline">Before</span><br>
-          <span class="ct-filled">&amp; After</span>
+          <span class="line-mask"><span class="line-inner ct-outline">Before</span></span>
+          <span class="line-mask"><span class="line-inner ct-filled">&amp; After</span></span>
         </h2>
         <div class="compare-meta">
           <span class="compare-meta-num">02 / Transformation</span>
@@ -1590,7 +1590,7 @@
 
 
     <!-- 05 — Community -->
-    <section id="community" class="sect community-sect">
+    <section id="community" class="sect community-sect" data-reveal="manual">
       <div class="community-bg" aria-hidden="true">
         <video autoplay muted loop playsinline>
           <source src="https://pub-32fafbd50ecc4342bfdff8ec680aa694.r2.dev/cbb.mp4" type="video/mp4" />
@@ -1616,7 +1616,7 @@
 
     <!-- 06 — Toolkit -->
     <!-- 07 — Contact -->
-    <section id="contact" class="sect contact-sect">
+    <section id="contact" class="sect contact-sect" data-reveal="manual">
       <div class="contact-bg" aria-hidden="true">
         <video autoplay muted loop playsinline>
           <source src="https://pub-32fafbd50ecc4342bfdff8ec680aa694.r2.dev/email.mp4" type="video/mp4" />
@@ -2262,6 +2262,59 @@
           }, 0.90);
           tl.set(blackout, { background: '#000', opacity: 1 }, 0.97);
         });
+      })();
+
+
+      // ── Compare — staggered reveal + scroll-driven wipe ──
+      (function () {
+        if (!document.querySelector('.compare-sect')) return;
+        var IN  = { trigger: '.compare-sect', start: 'top 78%', toggleActions: 'play none none reverse' };
+        var IN2 = { trigger: '.compare-sect', start: 'top 74%', toggleActions: 'play none none reverse' };
+
+        gsap.utils.toArray('.compare-title .line-inner').forEach(function (el, i) {
+          gsap.from(el, {
+            y: '105%', duration: 0.9, delay: i * 0.14, ease: 'power3.out',
+            scrollTrigger: IN
+          });
+        });
+        gsap.from('.compare-meta', {
+          y: 24, opacity: 0, duration: 0.7, delay: 0.3, ease: 'power2.out', scrollTrigger: IN
+        });
+        gsap.from('.compare-stage', {
+          y: 44, opacity: 0, duration: 0.95, delay: 0.16, ease: 'power3.out', scrollTrigger: IN2
+        });
+        gsap.from('.cmp-badge', {
+          y: 10, opacity: 0, duration: 0.5, stagger: 0.12, delay: 0.7, ease: 'power2.out', scrollTrigger: IN2
+        });
+        // Hint slides only — its hint-pulse keyframes own opacity, and a running
+        // CSS animation beats an inline style, so tweening opacity here would snap.
+        gsap.from('.compare-hint', {
+          y: 8, duration: 0.6, delay: 0.95, ease: 'power2.out', scrollTrigger: IN2
+        });
+
+        // Oversized "02" drifts against the scroll — cheap depth behind the header
+        gsap.to('.compare-backdrop-num', {
+          yPercent: 16, ease: 'none',
+          scrollTrigger: { trigger: '.compare-sect', start: 'top bottom', end: 'bottom top', scrub: 1 }
+        });
+
+        // The wipe is scroll-driven: the section arrives showing raw footage and
+        // scrolling uncovers the edit, so it demonstrates itself before anyone drags.
+        var stage = document.getElementById('compare-wrap');
+        if (stage) {
+          var wipe = gsap.fromTo(stage,
+            { '--pos': '92%' },
+            {
+              '--pos': '50%', ease: 'none',
+              scrollTrigger: { trigger: '.compare-sect', start: 'top 68%', end: 'center 58%', scrub: 1 }
+            }
+          );
+          // Hand control to the user the moment they grab it, so the two don't fight
+          stage.addEventListener('pointerdown', function () {
+            if (wipe.scrollTrigger) wipe.scrollTrigger.kill();
+            wipe.kill();
+          }, { once: true });
+        }
       })();
 
 

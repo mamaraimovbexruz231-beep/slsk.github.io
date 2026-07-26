@@ -115,8 +115,15 @@
       selectors.flatMap(s => Array.from(document.querySelectorAll(s)))
     );
 
-    // Exclude GSAP-controlled items in Foundations section to avoid transform conflicts
-    const found = all.filter(el => !el.closest('#overview .learn-card'));
+    // Exclude GSAP-controlled items in Foundations section to avoid transform conflicts,
+    // plus anything opting out with data-reveal="manual". A blanket section-level fade
+    // flattens the hierarchy of sections that have their own staggered choreography,
+    // and its translateY breaks position:sticky pins for the length of the transition.
+    // closest() covers the opted-out element and everything inside it.
+    const found = all.filter(el =>
+      !el.closest('#overview .learn-card') &&
+      !el.closest('[data-reveal="manual"]')
+    );
     if (!found.length) return;
 
     found.forEach(el => {
