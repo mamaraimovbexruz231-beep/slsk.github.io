@@ -2027,7 +2027,7 @@
           // shift far more than the near rim. Weighting the pointer offset by
           // that same depth term is what turns a flat disc into a real opening.
           '  float pdep=1.-smoothstep(0.,PR*.98,r);',
-          '  vec2 pI=p+uPar*(.085*pdep*pdep);',
+          '  vec2 pI=p+uPar*(.17*pdep*pdep);',
           '  float rI=max(length(pI),.0006);',
           // Rotate pI by a log(r)-based angle to create spiral — pure 2D, no atan
           '  float sa=-log(max(rI/PR,.0001)+.0001)*2.8-uT*.30;',
@@ -2176,10 +2176,20 @@
           rafId = requestAnimationFrame(tick);
           uni.uT.value = clock.getElapsedTime();
 
-          // Critically-damped follow — parallax should lag the cursor, not snap
-          parX += (tgtX - parX) * 0.055;
-          parY += (tgtY - parY) * 0.055;
-          uni.uPar.value.set(parX, -parY);
+          // Damped follow — parallax should lag the cursor, not snap to it
+          parX += (tgtX - parX) * 0.075;
+          parY += (tgtY - parY) * 0.075;
+
+          // Always-on idle orbit. Without this the depth is invisible unless
+          // you sweep the cursor to the section edges — and the portal sits
+          // dead centre, so a cursor resting on it reads exactly zero.
+          // Two incommensurate periods keep the drift from looking like a loop.
+          var it = uni.uT.value;
+          var idleX = Math.cos(it * 0.23) * 0.34;
+          var idleY = Math.sin(it * 0.19) * 0.34;
+          var damp  = parLock ? 0 : 1;
+
+          uni.uPar.value.set(parX + idleX * damp, -parY + idleY * damp);
 
           renderer.render(scene, camera);
         }
