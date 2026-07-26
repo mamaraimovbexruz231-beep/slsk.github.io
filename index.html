@@ -648,100 +648,39 @@
     .portal-click-zone {
       position: absolute; inset: 0; z-index: 4; cursor: pointer;
     }
-    /* Three-zone layout: headline (top) · enter ring (center) · toolkit (bottom) */
     .portal-inner {
       position: relative; z-index: 5;
       display: flex; flex-direction: column;
       align-items: center; text-align: center;
       min-height: 100vh;
-      justify-content: space-between;
-      padding: clamp(96px, 15vh, 150px) 24px clamp(44px, 7vh, 72px);
+      justify-content: flex-end;
+      padding-bottom: clamp(48px, 8vh, 80px);
       pointer-events: none;
     }
-    /* Gradient scrims so text reads over the portal glow — top and bottom */
+    /* Dark gradient behind text so it reads over the portal glow */
     .portal-bottom-fade {
-      position: absolute; inset: 0; z-index: 3; pointer-events: none;
-      background:
-        linear-gradient(to bottom, rgba(8,7,14,.88) 0%, rgba(8,7,14,.25) 26%, transparent 44%),
-        linear-gradient(to top,    rgba(8,7,14,.88) 0%, rgba(8,7,14,.25) 22%, transparent 40%);
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 220px; z-index: 3; pointer-events: none;
+      background: linear-gradient(to top, rgba(8,7,14,.90) 0%, rgba(8,7,14,.4) 55%, transparent 100%);
     }
-
-    /* ── Top: eyebrow + editorial headline ── */
-    .portal-head { display: flex; flex-direction: column; align-items: center; }
     .portal-label {
       font-size: clamp(.6rem, .9vw, .72rem);
       letter-spacing: 5px; text-transform: uppercase;
-      color: rgba(168,85,247,.75);
-      margin-bottom: 14px;
+      color: rgba(240,240,240,.38);
+      margin-bottom: 8px;
     }
-    .portal-title {
-      font-size: clamp(2.1rem, 5.2vw, 3.9rem);
-      font-weight: 800; letter-spacing: -1.6px; line-height: 1.03;
-      color: #f4f4f6;
-      text-shadow: 0 0 50px rgba(8,7,14,.9);
+    .portal-cta {
+      font-size: clamp(1rem, 1.6vw, 1.25rem);
+      font-weight: 500; color: rgba(240,240,240,.82);
+      letter-spacing: .4px; line-height: 1.5;
+      max-width: 500px;
+      text-shadow: 0 0 30px rgba(168,85,247,.5);
     }
-    .portal-title span {
+    .portal-cta span {
       background: var(--grad);
       -webkit-background-clip: text; background-clip: text; color: transparent;
+      font-weight: 700;
     }
-    .portal-sub {
-      margin-top: 14px;
-      font-size: clamp(.78rem, 1.1vw, .92rem);
-      color: rgba(240,240,240,.42);
-      letter-spacing: .3px; max-width: 420px;
-    }
-
-    /* ── Center: ENTER ring, sits over the portal core ── */
-    .portal-enter {
-      position: relative;
-      width:  clamp(96px, 10.5vw, 130px);
-      height: clamp(96px, 10.5vw, 130px);
-      display: grid; place-items: center;
-      border-radius: 50%;
-      border: 1px solid rgba(168,85,247,.4);
-      background: rgba(8,7,14,.3);
-      backdrop-filter: blur(2px);
-      transition: transform .5s cubic-bezier(.22,1,.36,1),
-                  border-color .5s ease, box-shadow .5s ease;
-    }
-    .portal-enter-text {
-      font-size: clamp(.6rem, .78vw, .7rem);
-      letter-spacing: 4.5px; text-transform: uppercase;
-      font-weight: 600; color: rgba(245,245,248,.92);
-      text-indent: 4.5px; /* optical centering against the letter-spacing */
-    }
-    /* Two ripples pulsing outward — the portal "breathing" */
-    .portal-enter::before,
-    .portal-enter::after {
-      content: ''; position: absolute; inset: -1px;
-      border-radius: 50%;
-      border: 1px solid rgba(168,85,247,.5);
-      animation: portalRipple 3.4s cubic-bezier(.22,.61,.36,1) infinite;
-      pointer-events: none;
-    }
-    .portal-enter::after { animation-delay: 1.7s; }
-    @keyframes portalRipple {
-      0%   { transform: scale(1);   opacity: .65; }
-      100% { transform: scale(2.1); opacity: 0; }
-    }
-    /* Whole section is the click target, so hover anywhere lights the ring */
-    .portal-sect:hover .portal-enter {
-      transform: scale(1.1);
-      border-color: rgba(168,85,247,.95);
-      box-shadow: 0 0 46px rgba(168,85,247,.35),
-                  inset 0 0 26px rgba(168,85,247,.16);
-    }
-
-    /* ── Bottom: what's on the other side ── */
-    .portal-tools {
-      display: flex; align-items: center;
-      gap: clamp(10px, 1.6vw, 20px);
-      flex-wrap: wrap; justify-content: center;
-      font-size: clamp(.58rem, .8vw, .68rem);
-      letter-spacing: 2.6px; text-transform: uppercase;
-      color: rgba(240,240,240,.34);
-    }
-    .portal-tools i { color: rgba(168,85,247,.5); font-style: normal; }
 
     /* Expands from center to swallow the screen */
     #portal-blackout {
@@ -1208,15 +1147,7 @@
       .cmp-label-big { display: none; }
 
       /* Portal */
-      .portal-sect { min-height: 88vh; }
-      .portal-inner {
-        min-height: 88vh;
-        padding: clamp(64px, 11vh, 90px) 20px clamp(32px, 5vh, 48px);
-      }
-      .portal-title { font-size: clamp(1.9rem, 9vw, 2.6rem); letter-spacing: -1px; }
-      .portal-sub { font-size: .76rem; margin-top: 10px; }
-      .portal-enter { width: 92px; height: 92px; }
-      .portal-tools { gap: 8px; letter-spacing: 1.8px; font-size: .55rem; }
+      .portal-sect { min-height: 70vh; }
 
       /* Community */
       .community-heading { letter-spacing: -1px; }
@@ -1640,26 +1571,12 @@
       <canvas id="bh-canvas" aria-hidden="true"></canvas>
       <div class="portal-click-zone" id="portal-btn"></div>
 
-      <!-- Top/bottom scrims — make text readable over portal glow -->
+      <!-- Bottom fade — makes text readable over portal glow -->
       <div class="portal-bottom-fade" aria-hidden="true"></div>
 
       <div class="portal-inner">
-        <div class="portal-head">
-          <div class="portal-label">Tutorials</div>
-          <h2 class="portal-title">Everything I <span>edit with</span></h2>
-          <p class="portal-sub">The apps, presets, and workflow behind every edit.</p>
-        </div>
-
-        <div class="portal-enter" aria-hidden="true">
-          <span class="portal-enter-text">Enter</span>
-        </div>
-
-        <div class="portal-tools" aria-hidden="true">
-          <span>Alight Motion</span><i>·</i>
-          <span>Node Video</span><i>·</i>
-          <span>CapCut</span><i>·</i>
-          <span>Wink</span>
-        </div>
+        <div class="portal-label">Tutorials</div>
+        <div class="portal-cta">Step through the portal to see<br>what I <span>edit with</span></div>
       </div>
     </section>
 
@@ -2019,7 +1936,9 @@
           uSpd:   { value: 0.65 },
           uScale: { value: 1.0 },
           uRim:   { value: 1.0 },
-          uEnter: { value: 0.0 }   // 0→1 on click: deepens tunnel perspective
+          uEnter: { value: 0.0 },              // 0→1 on click: deepens tunnel perspective
+          uPar:   { value: new THREE.Vector2(0, 0) }, // smoothed pointer → true parallax
+          uQual:  { value: window.innerWidth > 768 ? 14.0 : 7.0 } // raymarch steps
         };
 
         var VERT = [
@@ -2034,6 +1953,8 @@
           'uniform float uScale;',
           'uniform float uRim;',
           'uniform float uEnter;',
+          'uniform float uQual;',
+          'uniform vec2  uPar;',
           'varying vec2 vUv;',
           'const float PI=3.14159265;',
 
@@ -2046,6 +1967,21 @@
           'float fbm(vec2 p){',
           '  float v=0.;float a=.5;',
           '  for(int i=0;i<5;i++){v+=a*n2(p);p=p*2.2+vec2(1.7,2.3);a*=.5;}',
+          '  return v;',
+          '}',
+
+          // ── 3D value noise — drives the volumetric interior ──
+          'float h3(vec3 p){return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453);}',
+          'float n3(vec3 p){',
+          '  vec3 i=floor(p),f=fract(p),u=f*f*(3.-2.*f);',
+          '  return mix(mix(mix(h3(i+vec3(0,0,0)),h3(i+vec3(1,0,0)),u.x),',
+          '                 mix(h3(i+vec3(0,1,0)),h3(i+vec3(1,1,0)),u.x),u.y),',
+          '             mix(mix(h3(i+vec3(0,0,1)),h3(i+vec3(1,0,1)),u.x),',
+          '                 mix(h3(i+vec3(0,1,1)),h3(i+vec3(1,1,1)),u.x),u.y),u.z);',
+          '}',
+          'float fbm3(vec3 p){',
+          '  float v=0.;float a=.5;',
+          '  for(int i=0;i<3;i++){v+=a*n3(p);p=p*2.15+vec3(1.7,2.3,1.1);a*=.5;}',
           '  return v;',
           '}',
 
@@ -2086,11 +2022,18 @@
 
           // Interior — spiral vortex, seam-free (no atan in FBM)
           '  float depthMul=.30+uEnter*1.25;',
-          // Rotate p by a log(r)-based angle to create spiral — pure 2D, no atan
-          '  float sa=-log(max(r/PR,.0001)+.0001)*2.8-uT*.30;',
+          // ── DEPTH PARALLAX ──
+          // The tunnel's depth at a pixel goes as 1/r, so the deep centre must
+          // shift far more than the near rim. Weighting the pointer offset by
+          // that same depth term is what turns a flat disc into a real opening.
+          '  float pdep=1.-smoothstep(0.,PR*.98,r);',
+          '  vec2 pI=p+uPar*(.085*pdep*pdep);',
+          '  float rI=max(length(pI),.0006);',
+          // Rotate pI by a log(r)-based angle to create spiral — pure 2D, no atan
+          '  float sa=-log(max(rI/PR,.0001)+.0001)*2.8-uT*.30;',
           '  float csa=cos(sa),ssa=sin(sa);',
-          '  vec2 sp=vec2(p.x*csa-p.y*ssa,p.x*ssa+p.y*csa);', // spiral-rotated coords
-          '  float tv=depthMul/max(r/uScale,.001);',
+          '  vec2 sp=vec2(pI.x*csa-pI.y*ssa,pI.x*ssa+pI.y*csa);', // spiral-rotated coords
+          '  float tv=depthMul/max(rI/uScale,.001);',
           '  float tav=tv+uT*uSpd;',
           // Ring freq varies in 2D space — no ang, no seam
           '  float rfq=5.+fbm(sp*(3.5/PR)+vec2(tav*.055,0.))*5.;',
@@ -2099,16 +2042,60 @@
           '  float w1=fbm(sp*(5./PR)+vec2(uT*.28,-uT*.38));',
           '  float w2=fbm(sp*(8./PR)+vec2(-uT*.20,uT*.18));',
           '  float wisps=w1*w2*3.2;',
-          '  float ct=clamp(r/PR,0.,1.);',
+          '  float ct=clamp(rI/PR,0.,1.);',
           '  vec3 tc=mix(dp,pur*.9,wisps*(0.18+smoothstep(.7,.15,ct)*.75))*(ring*.8+wisps*.6+.008);',
           '  float pulse=sin(uT*1.55)*.18+.82;',
-          '  tc+=pur*.30*smoothstep(.30,.0,r/uScale)*pulse*(1.+uEnter*4.0);',
-          '  tc*=.025+smoothstep(0.,.5,r/PR)*.975;',
+          '  tc+=pur*.30*smoothstep(.30,.0,rI/uScale)*pulse*(1.+uEnter*4.0);',
+          '  tc*=.025+smoothstep(0.,.5,rI/PR)*.975;',
           // Stars (use sp for angular spread — no seam)
           '  float sv=fract(tv*.055);',
           '  float stAng=fract((atan(sp.y,sp.x)+3.14159)/(6.28318));', // only sin input, fine
           '  float sn=h2(vec2(floor(stAng*18.),floor(sv*22.)));',
-          '  tc+=pur*.25*step(.974,sn)*smoothstep(.42,.05,r/PR);',
+          '  tc+=pur*.25*step(.974,sn)*smoothstep(.42,.05,rI/PR);',
+
+          // ══ VOLUMETRIC INTERIOR — raymarched twisting funnel ══
+          // Real 3D: a view ray is built per-pixel and marched through a
+          // density field, so the interior parallaxes against the fixed rim.
+          '  if(inside>.002){',
+          // View ray. uPar rotates the ray (not the rim) — that offset IS the depth cue.
+          '    vec3 rd=normalize(vec3(p*.85+uPar*.22,-1.45));',
+          '    float tstep=.21;',
+          '    float tc0=.12;',
+          '    vec3 vol=vec3(0.);',
+          '    float trans=1.;',
+          // GLSL ES 1.0 needs a constant bound, so cap at 14 and cut short
+          // at runtime via uQual (14 desktop / 7 mobile).
+          '    for(int i=0;i<14;i++){',
+          '      if(float(i)>=uQual) break;',
+          '      vec3 q=rd*tc0;',
+          '      float dep=tc0;',
+          // Vortex: twist grows with depth, so far layers lag near ones
+          '      float tw=dep*1.45-uT*(.55+uSpd*.40)-uEnter*2.4;',
+          '      float cw=cos(tw),sw=sin(tw);',
+          '      vec2 qr=vec2(q.x*cw-q.y*sw,q.x*sw+q.y*cw);',
+          '      float rr=length(qr);',
+          // Funnel wall tapers with depth → tunnel recedes
+          '      float R=PR*(1.-dep*.17);',
+          // Noise stretched hard along depth (z freq .40 vs xy freq ~15) so
+          // features become long filaments running down the tunnel, not blobs.
+          // The per-step twist then winds them into helices.
+          '      float d=fbm3(vec3(qr*(6.0/PR),dep*.40-uT*(.42+uSpd*.30)));',
+          // Sharpen into discrete strands rather than a fog bank
+          '      d=pow(max(d-.34,0.)*1.9,2.6);',
+          '      float shell=exp(-abs(rr-R*.66)*(7.0/PR));',
+          '      float dens=d*shell;',
+          // Aerial perspective — far strands dimmer, so depth reads
+          '      vec3 vc=mix(pur,acc,clamp(d*.7,0.,1.));',
+          '      vc*=.30+.95/(1.+dep*dep*.9);',
+          '      vol+=vc*dens*trans*tstep*3.0;',
+          '      trans*=1.-clamp(dens*tstep*1.8,0.,1.);',
+          '      if(trans<.05) break;',
+          '      tc0+=tstep;',
+          '    }',
+          // Volume is an accent over the spiral, and it occludes it (trans),
+          // which is what gives near-strands-in-front-of-far-ones parallax.
+          '    tc=tc*(.55+.45*trans)+vol*(.85+uEnter*1.4);',
+          '  }',
 
           // Rim — FBM uses pW (continuous 2D), not ang — no seam
           '  float rimTurb=fbm(pW*(4.2/PR)+vec2(uT*.85,rimPos*5.+uT*.3));',
@@ -2164,6 +2151,23 @@
         mesh.frustumCulled = false;
         scene.add(mesh);
 
+        // ── Pointer parallax — drives the view ray, giving the interior real depth ──
+        var parX = 0, parY = 0, tgtX = 0, tgtY = 0, parLock = false;
+
+        if (window.matchMedia('(pointer: fine)').matches) {
+          sect.addEventListener('pointermove', function (e) {
+            if (parLock) return;
+            var rc = sect.getBoundingClientRect();
+            tgtX = ((e.clientX - rc.left) / rc.width  - 0.5) * 2;
+            tgtY = ((e.clientY - rc.top)  / rc.height - 0.5) * 2;
+          }, { passive: true });
+
+          sect.addEventListener('pointerleave', function () {
+            if (parLock) return;
+            tgtX = 0; tgtY = 0;
+          }, { passive: true });
+        }
+
         // ── Animation loop ──
         var clock = new THREE.Clock();
         var rafId = null;
@@ -2171,6 +2175,12 @@
         function tick() {
           rafId = requestAnimationFrame(tick);
           uni.uT.value = clock.getElapsedTime();
+
+          // Critically-damped follow — parallax should lag the cursor, not snap
+          parX += (tgtX - parX) * 0.055;
+          parY += (tgtY - parY) * 0.055;
+          uni.uPar.value.set(parX, -parY);
+
           renderer.render(scene, camera);
         }
 
@@ -2201,6 +2211,9 @@
           btn.style.pointerEvents = 'none';
           document.body.style.overflow = 'hidden';
 
+          // Straighten the view ray — you fly in dead-centre, not off-axis
+          parLock = true; tgtX = 0; tgtY = 0;
+
           var tl = gsap.timeline({
             onComplete: function () {
               if (galaxy) galaxy.pause();
@@ -2209,9 +2222,8 @@
             }
           });
 
-          // Text + ring fade out as you're pulled in
-          tl.to('.portal-head, .portal-tools', { opacity: 0, duration: 0.15, ease: 'power1.in' }, 0);
-          tl.to('.portal-enter', { opacity: 0, scale: 1.6, duration: 0.35, ease: 'power2.in' }, 0);
+          // Text fades out
+          tl.to('.portal-label, .portal-cta', { opacity: 0, duration: 0.15, ease: 'power1.in' }, 0);
 
           // Pull viewer deeper — stretches tunnel perspective (flying in)
           tl.to(uni.uEnter, { value: 1.0, duration: 0.9, ease: 'power2.in' }, 0);
